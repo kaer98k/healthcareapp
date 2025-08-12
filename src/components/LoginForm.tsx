@@ -36,21 +36,21 @@ export const LoginForm: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-gray-900">
+          <CardTitle className="text-3xl font-bold text-black">
             AI Health Coach
           </CardTitle>
-          <CardDescription className="text-lg text-gray-600 mt-2">
+          <CardDescription className="text-lg text-black mt-2">
             맞춤형 운동 추천을 받아보세요
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <Button
-              onClick={handleGoogleLogin}
-              className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-3 py-3"
-              disabled={loading}
-            >
+                         <Button
+               onClick={handleGoogleLogin}
+               className="w-full bg-white text-black border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-3 py-3"
+               disabled={loading}
+             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -85,7 +85,7 @@ export const LoginForm: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-black">
               로그인하면 개인정보 보호정책 및 서비스 약관에 동의하는 것으로 간주됩니다.
             </p>
           </div>
