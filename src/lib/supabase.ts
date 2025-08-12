@@ -8,20 +8,3 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// 인증 관련 타입들
-export interface AuthUser {
-  id: string
-  email?: string
-  user_metadata?: {
-    full_name?: string
-    avatar_url?: string
-    provider?: string
-  }
-}
-
-export interface AuthSession {
-  user: AuthUser
-  access_token: string
-  refresh_token: string
-}

@@ -1,5 +1,22 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, AuthUser, AuthSession } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
+
+// 인증 관련 타입들을 여기서 직접 정의
+interface AuthUser {
+  id: string
+  email?: string
+  user_metadata?: {
+    full_name?: string
+    avatar_url?: string
+    provider?: string
+  }
+}
+
+interface AuthSession {
+  user: AuthUser
+  access_token: string
+  refresh_token: string
+}
 
 interface AuthContextType {
   user: AuthUser | null
