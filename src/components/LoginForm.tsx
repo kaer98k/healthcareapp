@@ -36,21 +36,28 @@ export const LoginForm: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-black">
+          <CardTitle 
+            className="text-3xl font-bold" 
+            style={{ color: '#000000', fontWeight: 'bold' }}
+          >
             AI Health Coach
           </CardTitle>
-          <CardDescription className="text-lg text-black mt-2">
+          <CardDescription 
+            className="text-lg mt-2" 
+            style={{ color: '#000000' }}
+          >
             맞춤형 운동 추천을 받아보세요
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
           <div className="space-y-4">
-                         <Button
-               onClick={handleGoogleLogin}
-               className="w-full bg-white text-black border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-3 py-3"
-               disabled={loading}
-             >
+            <Button
+              onClick={handleGoogleLogin}
+              className="w-full bg-white border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-3 py-3"
+              style={{ color: '#000000' }}
+              disabled={loading}
+            >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -69,23 +76,27 @@ export const LoginForm: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              <span>Google로 계속하기</span>
+              <span style={{ color: '#000000' }}>Google로 계속하기</span>
             </Button>
 
             <Button
               onClick={handleKakaoLogin}
-              className="w-full bg-yellow-400 text-gray-900 hover:bg-yellow-500 flex items-center justify-center space-x-3 py-3"
+              className="w-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center space-x-3 py-3"
+              style={{ color: '#000000' }}
               disabled={loading}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3zm5.907 7.06a1.416 1.416 0 0 0-.846.113 1.439 1.439 0 0 0-.537.823 1.44 1.44 0 0 0 .537.823c.264.151.582.19.846.113a1.416 1.416 0 0 0 .537-.823 1.439 1.439 0 0 0-.537-.823zm-11.814 0a1.416 1.416 0 0 0-.846.113 1.439 1.439 0 0 0-.537.823 1.44 1.44 0 0 0 .537.823c.264.151.582.19.846.113a1.416 1.416 0 0 0 .537-.823 1.439 1.439 0 0 0-.537-.823z"/>
               </svg>
-              <span>카카오로 계속하기</span>
+              <span style={{ color: '#000000' }}>카카오로 계속하기</span>
             </Button>
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-black">
+            <p 
+              className="text-sm" 
+              style={{ color: '#000000' }}
+            >
               로그인하면 개인정보 보호정책 및 서비스 약관에 동의하는 것으로 간주됩니다.
             </p>
           </div>
