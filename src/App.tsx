@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { recommendWorkout } from './utils/workoutRecommender';
 import { UserProfileForm } from './components/UserProfileForm';
 import { WorkoutRecommendations } from './components/WorkoutRecommendations';
+import { LoginForm } from './components/LoginForm';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { Yoga, Heart, Dumbbell } from './components/icons';
+import { useAuth } from './contexts/AuthContext';
 
 // 기존 운동 루틴 데이터 (간단한 모드용)
 const simpleWorkoutRoutines = {
@@ -36,6 +38,8 @@ const simpleWorkoutRoutines = {
 
 // 메인 앱 컴포넌트
 const App: React.FC = () => {
+  const { user, loading } = useAuth();
+  
   // 앱 상태 관리
   const [appMode, setAppMode] = useState<'welcome' | 'simple' | 'advanced'>('welcome');
   const [userName, setUserName] = useState<string>('');
@@ -121,6 +125,20 @@ const App: React.FC = () => {
         return '';
     }
   };
+
+  // 로딩 중이면 로딩 화면 표시
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // 로그인하지 않은 경우 로그인 화면 표시
+  if (!user) {
+    return <LoginForm />;
+  }
 
   // 환영 화면
   if (appMode === 'welcome') {
