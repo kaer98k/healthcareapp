@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Yoga, Heart, Dumbbell } from './icons';
+import { AddressDisplay } from './AddressDisplay';
 
 interface WorkoutRecommendationsProps {
   recommendations: any[];
@@ -151,6 +152,17 @@ export const WorkoutRecommendations: React.FC<WorkoutRecommendationsProps> = ({
           {userProfile.fitnessGoal === 'flexibility' && '유연성 향상을 위한 맞춤형 운동을 추천해드립니다!'}
           {userProfile.fitnessGoal === 'general_fitness' && '전반적인 건강을 위한 맞춤형 운동을 추천해드립니다!'}
         </p>
+        
+        {/* 주소 정보 표시 */}
+        {userProfile.address && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg inline-block">
+            <AddressDisplay 
+              address={userProfile.address} 
+              zipCode={userProfile.zipCode}
+              className="text-center"
+            />
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

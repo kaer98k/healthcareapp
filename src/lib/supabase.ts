@@ -1,9 +1,54 @@
 import { createClient } from '@supabase/supabase-js'
 
-// 임시로 더미 값 사용 (테스트용)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dummy.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy-key'
+// 환경 변수 검증
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// 환경 변수가 없어도 에러를 발생시키지 않음
+// 환경 변수가 없으면 에러 발생
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Supabase 환경 변수가 설정되지 않았습니다. .env 파일에 VITE_SUPABASE_URL과 VITE_SUPABASE_ANON_KEY를 설정해주세요.'
+  )
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Supabase 클라이언트 생성
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+
+// Google OAuth 로그인 함수
+export const signInWithGoogle = async () => {
+  try {
+    console.log('Google OAuth 시작...')
+    console.log('Supabase URL:', supabaseUrl)
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://spdwmdsuwshovphqvyyl.supabase.co/auth/v1/callback',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    })
+    
+    if (error) {
+      console.error('Google OAuth 오류:', error)
+      throw error
+    }
+    
+    console.log('Google OAuth 성공:', data)
+    return { data, error: null }
+  } catch (error) {
+    console.error('Google OAuth 예외:', error)
+    return { data: null, error }
+  }
+}
+
+// 타입 안전성을 위한 헬퍼 함수
+export const getSupabaseClient = () => supabase

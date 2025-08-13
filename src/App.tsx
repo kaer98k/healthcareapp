@@ -3,13 +3,16 @@ import React, { useState } from 'react';
 import { recommendWorkout } from './utils/workoutRecommender';
 import { UserProfileForm } from './components/UserProfileForm';
 import { WorkoutRecommendations } from './components/WorkoutRecommendations';
-import { LoginForm } from './components/LoginForm';
+import { LoginForm } from './components/Auth/LoginForm';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { Yoga, Heart, Dumbbell } from './components/icons';
 import { useAuth } from './contexts/AuthContext';
+import { ConfigDebugger } from './components/ConfigDebugger';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeToggle } from './components/ThemeToggle';
 
 // 기존 운동 루틴 데이터 (간단한 모드용)
 const simpleWorkoutRoutines = {
@@ -37,7 +40,7 @@ const simpleWorkoutRoutines = {
 };
 
 // 메인 앱 컴포넌트
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
   
   // 앱 상태 관리
@@ -129,7 +132,7 @@ const App: React.FC = () => {
   // 로딩 중이면 로딩 화면 표시
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -143,23 +146,23 @@ const App: React.FC = () => {
   // 환영 화면
   if (appMode === 'welcome') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col items-center p-4 font-sans">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col items-center p-4 font-sans transition-colors duration-300">
         {/* 헤더 */}
-        <header className="w-full max-w-6xl p-8 bg-white rounded-2xl shadow-xl mb-8 text-center border border-gray-100">
+        <header className="w-full max-w-6xl p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl mb-8 text-center border border-gray-100 dark:border-gray-700 transition-colors duration-300">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent tracking-tight">
             AI 건강 코치
           </h1>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="mt-4 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             개인 맞춤형 운동 루틴과 전문적인 운동 가이드를 받아보세요.
           </p>
-          <div className="mt-6 flex justify-center space-x-4 text-sm text-gray-500">
+          <div className="mt-6 flex justify-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
             <span>🏃‍♂️ 근력 운동</span>
             <span>💪 유산소 운동</span>
             <span>🧘‍♀️ 요가 & 명상</span>
           </div>
         </header>
 
-        <main className="w-full max-w-6xl p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+        <main className="w-full max-w-6xl p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors duration-300">
           {!userName ? (
             // 사용자 이름 입력 폼
             <Card className="w-full max-w-md mx-auto">
@@ -192,12 +195,12 @@ const App: React.FC = () => {
           ) : (
             // 모드 선택
             <div className="space-y-8">
-              <div className="text-center">
-                <h2 className="text-4xl font-bold text-gray-700 mb-2">
-                  안녕하세요, <span className="text-blue-500">{userName}</span>님! ✨
-                </h2>
-                <p className="text-xl text-gray-600">어떤 방식으로 운동을 시작하고 싶으신가요?</p>
-              </div>
+                          <div className="text-center">
+              <h2 className="text-4xl font-bold text-gray-700 dark:text-gray-200 mb-2">
+                안녕하세요, <span className="text-blue-500">{userName}</span>님! ✨
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300">어떤 방식으로 운동을 시작하고 싶으신가요?</p>
+            </div>
 
               <div className="grid md:grid-cols-2 gap-8">
                 {/* 간단 모드 */}
@@ -366,8 +369,20 @@ const App: React.FC = () => {
       <footer className="w-full max-w-6xl p-6 mt-8 text-center text-gray-500 text-sm bg-white rounded-xl shadow-lg border border-gray-100">
         <p>&copy; 2024 AI 건강 코치. 전문적인 운동 가이드로 건강한 삶을 만들어가세요. 🏆</p>
       </footer>
+      
+      {/* 설정 디버거 */}
+      <ConfigDebugger />
     </div>
   );
 };
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+      <ThemeToggle />
+    </ThemeProvider>
+  )
+}
 
 export default App;

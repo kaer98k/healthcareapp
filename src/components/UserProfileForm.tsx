@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { AddressSearch } from './AddressSearch';
 
 interface UserProfileFormProps {
   onSubmit: (profile: any, oneRM: any) => void;
@@ -134,6 +135,17 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSubmit }) =>
             <option value="active">적극적 활동 (주 6-7일 운동)</option>
             <option value="very_active">매우 적극적 활동 (매일 운동)</option>
           </select>
+        </div>
+
+        {/* 주소 필드 추가 */}
+        <div className="md:col-span-2">
+          <AddressSearch
+            onAddressSelect={(address, zipCode) => {
+              handleProfileChange('address', address)
+              handleProfileChange('zipCode', zipCode)
+            }}
+            placeholder="주소를 검색하세요"
+          />
         </div>
       </div>
 
