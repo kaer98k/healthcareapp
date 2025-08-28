@@ -5,7 +5,12 @@ export interface LocalAddress {
   district: string
   address: string
   zipCode: string
-  category: 'residential' | 'commercial' | 'mixed'
+  category: 'residential' | 'commercial' | 'mixed' | 'gym' | 'fitness'
+  type?: '헬스장' | '요가원' | '필라테스' | '크로스핏' | '태권도' | '복싱' | '수영장' | '테니스장' | '골프장' | '등산로'
+  name?: string
+  phone?: string
+  rating?: number
+  facilities?: string[]
 }
 
 export const localAddresses: LocalAddress[] = [
@@ -319,6 +324,216 @@ export const localAddresses: LocalAddress[] = [
     address: '중문동 654번지',
     zipCode: '63547',
     category: 'commercial'
+  },
+
+  // 헬스장 및 운동시설 데이터 추가
+  {
+    id: 'gym-seoul-1',
+    city: '서울특별시',
+    district: '강남구',
+    address: '테헤란로 123번길 45',
+    zipCode: '06123',
+    category: 'gym',
+    type: '헬스장',
+    name: '강남 피트니스 센터',
+    phone: '02-1234-5678',
+    rating: 4.8,
+    facilities: ['웨이트 머신', '카디오 머신', '수영장', '사우나', '프리미엄 락커룸']
+  },
+  {
+    id: 'gym-seoul-2',
+    city: '서울특별시',
+    district: '강남구',
+    address: '역삼동 456번길 78',
+    zipCode: '06124',
+    category: 'gym',
+    type: '크로스핏',
+    name: '강남 크로스핏',
+    phone: '02-2345-6789',
+    rating: 4.9,
+    facilities: ['크로스핏 장비', '웨이트', '카디오', '그룹 레슨']
+  },
+  {
+    id: 'gym-seoul-3',
+    city: '서울특별시',
+    district: '서초구',
+    address: '서초대로 789번길 12',
+    zipCode: '06601',
+    category: 'gym',
+    type: '요가원',
+    name: '서초 요가 스튜디오',
+    phone: '02-3456-7890',
+    rating: 4.7,
+    facilities: ['요가 매트', '명상실', '프리미엄 락커룸', '샤워시설']
+  },
+  {
+    id: 'gym-seoul-4',
+    city: '서울특별시',
+    district: '마포구',
+    address: '홍대입구역 1번출구 앞',
+    zipCode: '04039',
+    category: 'gym',
+    type: '헬스장',
+    name: '홍대 피트니스',
+    phone: '02-4567-8901',
+    rating: 4.5,
+    facilities: ['웨이트 머신', '카디오 머신', '그룹 레슨', '개인 트레이닝']
+  },
+  {
+    id: 'gym-busan-1',
+    city: '부산광역시',
+    district: '해운대구',
+    address: '해운대해변로 456번길 23',
+    zipCode: '48094',
+    category: 'gym',
+    type: '헬스장',
+    name: '해운대 피트니스',
+    phone: '051-1234-5678',
+    rating: 4.6,
+    facilities: ['웨이트 머신', '카디오 머신', '수영장', '사우나', '바다 전망']
+  },
+  {
+    id: 'gym-busan-2',
+    city: '부산광역시',
+    district: '해운대구',
+    address: '중동 789번길 45',
+    zipCode: '48095',
+    category: 'gym',
+    type: '수영장',
+    name: '해운대 수영장',
+    phone: '051-2345-6789',
+    rating: 4.4,
+    facilities: ['25m 수영장', '어린이 풀', '사우나', '수영 강습']
+  },
+  {
+    id: 'gym-daegu-1',
+    city: '대구광역시',
+    district: '중구',
+    address: '동성로 456번길 78',
+    zipCode: '41908',
+    category: 'gym',
+    type: '헬스장',
+    name: '대구 중앙 피트니스',
+    phone: '053-1234-5678',
+    rating: 4.5,
+    facilities: ['웨이트 머신', '카디오 머신', '그룹 레슨', '개인 트레이닝']
+  },
+  {
+    id: 'gym-incheon-1',
+    city: '인천광역시',
+    district: '연수구',
+    address: '송도동 123번길 90',
+    zipCode: '22001',
+    category: 'gym',
+    type: '필라테스',
+    name: '송도 필라테스',
+    phone: '032-1234-5678',
+    rating: 4.8,
+    facilities: ['필라테스 장비', '그룹 레슨', '개인 레슨', '프리미엄 락커룸']
+  },
+  {
+    id: 'gym-gwangju-1',
+    city: '광주광역시',
+    district: '서구',
+    address: '치평동 456번길 12',
+    zipCode: '61962',
+    category: 'gym',
+    type: '태권도',
+    name: '광주 태권도장',
+    phone: '062-1234-5678',
+    rating: 4.7,
+    facilities: ['태권도 도장', '격파 연습장', '체력 단련실', '아동/성인 반']
+  },
+  {
+    id: 'gym-daejeon-1',
+    city: '대전광역시',
+    district: '유성구',
+    address: '대학로 123번길 45',
+    zipCode: '34134',
+    category: 'gym',
+    type: '헬스장',
+    name: '대전 유성 피트니스',
+    phone: '042-1234-5678',
+    rating: 4.6,
+    facilities: ['웨이트 머신', '카디오 머신', '수영장', '사우나', '골프 연습장']
+  },
+  {
+    id: 'gym-ulsan-1',
+    city: '울산광역시',
+    district: '남구',
+    address: '삼산동 789번길 67',
+    zipCode: '44776',
+    category: 'gym',
+    type: '복싱',
+    name: '울산 복싱장',
+    phone: '052-1234-5678',
+    rating: 4.5,
+    facilities: ['복싱 링', '샌드백', '스피드백', '체력 단련실', '그룹 레슨']
+  },
+  {
+    id: 'gym-gyeonggi-1',
+    city: '경기도',
+    district: '성남시',
+    address: '분당구 정자동 456번길 89',
+    zipCode: '13561',
+    category: 'gym',
+    type: '헬스장',
+    name: '분당 프리미엄 피트니스',
+    phone: '031-1234-5678',
+    rating: 4.9,
+    facilities: ['웨이트 머신', '카디오 머신', '수영장', '사우나', '골프 연습장', '테니스장']
+  },
+  {
+    id: 'gym-gyeonggi-2',
+    city: '경기도',
+    district: '고양시',
+    address: '일산동구 백석동 123번길 45',
+    zipCode: '10301',
+    category: 'gym',
+    type: '요가원',
+    name: '일산 요가 스튜디오',
+    phone: '031-2345-6789',
+    rating: 4.7,
+    facilities: ['요가 매트', '명상실', '프리미엄 락커룸', '샤워시설', '카페']
+  },
+  {
+    id: 'gym-gangwon-1',
+    city: '강원도',
+    district: '춘천시',
+    address: '신북읍 456번길 78',
+    zipCode: '24239',
+    category: 'gym',
+    type: '등산로',
+    name: '춘천 등산로',
+    phone: '033-1234-5678',
+    rating: 4.8,
+    facilities: ['등산로', '휴식 공간', '전망대', '주차장', '화장실']
+  },
+  {
+    id: 'gym-chungbuk-1',
+    city: '충청북도',
+    district: '청주시',
+    address: '상당구 789번길 12',
+    zipCode: '28501',
+    category: 'gym',
+    type: '테니스장',
+    name: '청주 테니스장',
+    phone: '043-1234-5678',
+    rating: 4.6,
+    facilities: ['테니스 코트', '연습장', '체력 단련실', '프로샵', '카페']
+  },
+  {
+    id: 'gym-chungnam-1',
+    city: '충청남도',
+    district: '천안시',
+    address: '동남구 321번길 67',
+    zipCode: '31132',
+    category: 'gym',
+    type: '골프장',
+    name: '천안 골프장',
+    phone: '041-1234-5678',
+    rating: 4.7,
+    facilities: ['18홀 골프장', '골프 연습장', '프로샵', '레스토랑', '숙박시설']
   }
 ]
 

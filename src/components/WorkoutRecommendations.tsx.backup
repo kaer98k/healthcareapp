@@ -1,0 +1,1428 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  type: 'personal' | 'community' | 'team';
+  target: number;
+  current: number;
+  unit: string;
+  startDate: Date;
+  endDate: Date;
+  participants: number;
+  isCompleted: boolean;
+  badge?: string;
+  category: 'steps' | 'calories' | 'exercise' | 'streak';
+}
+
+interface DailyStats {
+  date: string;
+  steps: number;
+  calories: number;
+  exerciseMinutes: number;
+  streak: number;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  members: string[];
+  totalSteps: number;
+  totalCalories: number;
+  rank: number;
+}
+
+interface Match {
+  id: string;
+  teamAId: string;
+  teamBId: string;
+  startDate: Date;
+  endDate: Date;
+  status: 'upcoming' | 'ongoing' | 'finished';
+}
+
+const WorkoutRecommendations: React.FC = () => {
+  const [selectedTab, setSelectedTab] = useState<'daily' | 'personal' | 'ranking' | 'fun' | 'team'>('daily');
+  const [dailyStats, setDailyStats] = useState<DailyStats>({
+    date: new Date().toISOString().split('T')[0],
+    steps: 0,
+    calories: 0,
+    exerciseMinutes: 0,
+    streak: 0
+  });
+  // 월(0)~일(6) 기준의 주간 걸음 수 데이터. 기본 샘플 값을 제공하고, 오늘 값은 dailyStats에 맞춰 동기화한다.
+  const [weeklySteps, setWeeklySteps] = useState<number[]>([8220, 7794, 5800, 8194, 7099, 7725, 9005]);
+  const [showCalendar, setShowCalendar] = useState(false);
+  
+  // 월별 데이터 추가
+  const [monthlySteps, setMonthlySteps] = useState<number[]>([
+    8500, 9200, 7800, 8900, 7600, 8100, 9500, 8800, 8200, 7900, 8700, 9100,
+    8400, 9300, 7700, 8600, 7500, 8000, 9400, 8700, 8100, 7800, 8600, 9000,
+    8300, 9200, 7600, 8500, 7400, 7900
+  ]);
+  const [graphView, setGraphView] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+
+  // 월(0)~일(6) 인덱스 계산: JS는 일(0)~토(6)이므로 월 기준으로 맞춘다.
+  const jsDayIndex = new Date().getDay(); // 0: 일
+  const mondayBasedTodayIndex = (jsDayIndex + 6) % 7; // 월=0, ..., 일=6
+
+  useEffect(() => {
+    setWeeklySteps(prev => {
+      const next = [...prev];
+      next[mondayBasedTodayIndex] = dailyStats.steps;
+      return next;
+    });
+  }, [dailyStats.steps, mondayBasedTodayIndex]);
+
+  // Canvas 요소를 위한 ref 추가
+  const chartCanvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // Chart.js 그래프 초기화 - 모달이 열린 후에 실행
+  useEffect(() => {
+    // 모달이 열려있을 때만 차트 초기화
+    if (!showCalendar) return;
+    
+    // Chart.js가 로드되었는지 확인
+    const initChart = () => {
+      console.log('Chart.js 초기화 시작');
+      console.log('window.Chart 존재 여부:', typeof window !== 'undefined' && (window as any).Chart);
+      console.log('모달 상태:', showCalendar);
+      
+      if (typeof window !== 'undefined' && (window as any).Chart) {
+        // useRef를 통해 Canvas 요소 참조
+        const ctx = chartCanvasRef.current;
+        console.log('Canvas 요소 (useRef):', ctx);
+        
+        if (ctx) {
+          // 기존 차트가 있다면 제거
+          const existingChart = (window as any).Chart.getChart(ctx);
+          if (existingChart) {
+            console.log('기존 차트 제거');
+            existingChart.destroy();
+          }
+
+          // 날짜 라벨 생성
+          const dateLabels = weeklySteps.map((steps, index) => {
+            const today = new Date();
+            const dayOffset = index - mondayBasedTodayIndex;
+            const date = new Date(today);
+            date.setDate(today.getDate() + dayOffset);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${month}/${day}`;
+          });
+          
+          console.log('날짜 라벨:', dateLabels);
+          console.log('걸음수 데이터:', weeklySteps);
+
+          // 그래디언트 생성
+          const gradient = ctx.getContext('2d')?.createLinearGradient(0, 0, 0, 200);
+          if (gradient) {
+            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.4)'); // 연한 주황색
+            gradient.addColorStop(1, 'rgba(249, 115, 22, 0)'); // 투명
+          }
+
+          try {
+            const chart = new (window as any).Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: dateLabels,
+                datasets: [{
+                  label: '걸음수',
+                  data: weeklySteps,
+                  borderColor: 'rgba(249, 115, 22, 1)', // 주황색 선
+                  backgroundColor: gradient,
+                  fill: true,
+                  tension: 0.4, // 부드러운 곡선
+                  pointRadius: 4, // 데이터 포인트 크기
+                  pointBackgroundColor: 'rgba(249, 115, 22, 1)', // 포인트 배경색
+                  pointBorderColor: 'white', // 포인트 테두리색
+                  pointBorderWidth: 2, // 포인트 테두리 두께
+                  pointHoverRadius: 6, // 호버 시 포인트 크기
+                  pointHoverBackgroundColor: 'rgba(249, 115, 22, 1)',
+                  pointHoverBorderColor: 'white',
+                  pointHoverBorderWidth: 3,
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false // 범례 숨김
+                  },
+                  tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    titleColor: '#1f2937',
+                    bodyColor: '#1f2937',
+                    borderColor: 'rgba(249, 115, 22, 0.2)',
+                    borderWidth: 1,
+                    cornerRadius: 25,
+                    padding: 16,
+                    displayColors: false,
+                    titleFont: {
+                      size: 14,
+                      weight: 'bold'
+                    },
+                    bodyFont: {
+                      size: 16,
+                      weight: '600'
+                    },
+                    callbacks: {
+                      title: function(context: any) {
+                        return context[0].label;
+                      },
+                      label: function(context: any) {
+                        return `${context.parsed.y.toLocaleString()}보`;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    grid: {
+                      display: false // X축 그리드 숨김
+                    },
+                    ticks: {
+                      color: '#6b7280', // X축 라벨 색상
+                      font: {
+                        size: 12
+                      }
+                    },
+                    border: {
+                      display: false // X축 선 숨김
+                    }
+                  },
+                  y: {
+                    grid: {
+                      display: false // Y축 그리드 숨김
+                    },
+                    ticks: {
+                      display: false // Y축 라벨 숨김
+                    },
+                    border: {
+                      display: false // Y축 선 숨김
+                    }
+                  }
+                },
+                interaction: {
+                  intersect: false,
+                  mode: 'index'
+                }
+              }
+            });
+            
+            console.log('차트 생성 성공:', chart);
+          } catch (error) {
+            console.error('차트 생성 오류:', error);
+          }
+        } else {
+          console.error('Canvas 요소를 찾을 수 없습니다 (useRef)');
+        }
+      } else {
+        console.error('Chart.js가 로드되지 않았습니다');
+      }
+    };
+
+    // 모달이 열린 후 약간의 지연을 두고 차트 초기화
+    const timer = setTimeout(initChart, 500);
+    
+    return () => clearTimeout(timer);
+  }, [showCalendar, weeklySteps, mondayBasedTodayIndex]);
+
+  // showCalendar 상태가 변경될 때마다 차트 강제 재초기화
+  useEffect(() => {
+    if (showCalendar) {
+      // 모달이 열린 후 차트가 제대로 표시되도록 강제 리렌더링
+      const timer = setTimeout(() => {
+        const event = new Event('resize');
+        window.dispatchEvent(event);
+      }, 600);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showCalendar]);
+
+
+  const [communityChallenges, setCommunityChallenges] = useState<Challenge[]>([
+    {
+      id: '4',
+      title: '전체 사용자 주간 걸음 수 대결',
+      description: '이번 주 가장 많이 걸은 사람은 누구일까요?',
+      type: 'community',
+      target: 100000,
+      current: 0,
+      unit: '보',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      participants: 156,
+      isCompleted: false,
+      category: 'steps'
+    }
+  ]);
+  const [teams, setTeams] = useState<Team[]>([
+    {
+      id: '1',
+      name: '🔥 불꽃팀',
+      members: ['김철수', '박영희', '이민수'],
+      totalSteps: 125000,
+      totalCalories: 3200,
+      rank: 1
+    },
+    {
+      id: '2',
+      name: '💪 강철팀',
+      members: ['정수진', '최지영', '한동훈'],
+      totalSteps: 118000,
+      totalCalories: 2950,
+      rank: 2
+    }
+  ]);
+
+  // 팀 만들기 모달 상태
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [newMemberInput, setNewMemberInput] = useState('');
+  const [newTeamMembers, setNewTeamMembers] = useState<string[]>([]);
+  const maxMembers = 10;
+
+  const handleAddMember = () => {
+    const trimmed = newMemberInput.trim();
+    if (!trimmed) return;
+    if (newTeamMembers.length >= maxMembers) return;
+    setNewTeamMembers(prev => [...prev, trimmed]);
+    setNewMemberInput('');
+  };
+
+  const handleRemoveMember = (name: string) => {
+    setNewTeamMembers(prev => prev.filter(m => m !== name));
+  };
+
+  const handleCreateTeam = () => {
+    if (!newTeamName.trim()) return;
+    const team: Team = {
+      id: Date.now().toString(),
+      name: newTeamName.trim(),
+      members: newTeamMembers.slice(0, maxMembers),
+      totalSteps: 0,
+      totalCalories: 0,
+      rank: teams.length + 1
+    };
+    setTeams(prev => [...prev, team]);
+    setShowCreateTeam(false);
+    setNewTeamName('');
+    setNewTeamMembers([]);
+    setNewMemberInput('');
+  };
+
+  // 대결(매치) 상태
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [showCreateMatch, setShowCreateMatch] = useState(false);
+  const [selectedTeamAId, setSelectedTeamAId] = useState('');
+  const [selectedTeamBId, setSelectedTeamBId] = useState('');
+  const [matchStartDate, setMatchStartDate] = useState<string>('');
+  const [matchEndDate, setMatchEndDate] = useState<string>('');
+
+  const handleCreateMatch = () => {
+    if (!selectedTeamAId || !selectedTeamBId || selectedTeamAId === selectedTeamBId) return;
+    const teamA = teams.find(t => t.id === selectedTeamAId);
+    const teamB = teams.find(t => t.id === selectedTeamBId);
+    if (!teamA || !teamB) return;
+    // 인원 제한 확인(최대 10명 vs 10명)
+    if (teamA.members.length > maxMembers || teamB.members.length > maxMembers) return;
+    const start = matchStartDate ? new Date(matchStartDate) : new Date();
+    const end = matchEndDate ? new Date(matchEndDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const status: Match['status'] = now < start ? 'upcoming' : now > end ? 'finished' : 'ongoing';
+    const match: Match = {
+      id: Date.now().toString(),
+      teamAId: teamA.id,
+      teamBId: teamB.id,
+      startDate: start,
+      endDate: end,
+      status
+    };
+    setMatches(prev => [match, ...prev]);
+    setShowCreateMatch(false);
+    setSelectedTeamAId('');
+    setSelectedTeamBId('');
+    setMatchStartDate('');
+    setMatchEndDate('');
+  };
+
+  // 걸음 수 입력 처리
+  const handleStepsInput = (steps: number) => {
+    setDailyStats(prev => ({
+      ...prev,
+      steps: Math.max(0, steps),
+      calories: Math.round(steps * 0.04) // 대략적인 칼로리 계산
+    }));
+  };
+
+
+
+  return (
+    <>
+      <div className="max-w-6xl mx-auto p-6">
+        {/* 헤더 */}
+        <div className="text-center mb-12 relative">
+          {/* 배경 그라데이션 효과 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 opacity-10 rounded-3xl blur-3xl transform scale-150"></div>
+          
+          {/* 메인 제목 */}
+          <div className="relative">
+            <div className="inline-flex items-center space-x-4 mb-4">
+              <div className="text-6xl animate-bounce">🏆</div>
+              <h1 className="text-6xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                챌린지
+              </h1>
+              <div className="text-6xl animate-pulse">🔥</div>
+            </div>
+            
+            {/* 서브타이틀 */}
+            <div className="space-y-2">
+              <p className="text-2xl font-bold text-text-primary">매일의 참여로 건강한 습관을 만들어보세요!</p>
+              <p className="text-lg text-text-secondary">열정을 불태우고 목표를 달성하세요! 💪</p>
+            </div>
+            
+            {/* 동기부여 배지들 */}
+            <div className="flex justify-center space-x-4 mt-6">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse">
+                🚀 도전하세요!
+              </div>
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse" style={{animationDelay: '0.5s'}}>
+                💪 포기하지 마세요!
+            </div>
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse" style={{animationDelay: '1s'}}>
+                🎯 목표를 향해!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 탭 네비게이션 */}
+        <div className="flex justify-center mb-12">
+          <div className="relative bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-2 shadow-xl border border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-1">
+              {[
+                { 
+                  id: 'daily', 
+                  label: '일일 현황', 
+                  icon: '📊',
+                  description: '오늘의 활동 현황',
+                  color: 'from-blue-500 to-cyan-500'
+                },
+
+                { 
+                  id: 'ranking', 
+                  label: '랭킹', 
+                  icon: '🏆',
+                  description: '걸음수 순위',
+                  color: 'from-purple-500 to-pink-500'
+                },
+                { 
+                  id: 'fun', 
+                  label: '신박 챌린지', 
+                  icon: '🎪',
+                  description: '엉뚱한 도전',
+                  color: 'from-yellow-500 to-orange-500'
+                },
+                { 
+                  id: 'team', 
+                  label: '팀 대결', 
+                  icon: '👥',
+                  description: '팀워크로 승리',
+                  color: 'from-red-500 to-pink-500'
+                }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedTab(tab.id as any)}
+                  className={`relative group transition-all duration-300 ease-out ${
+                    selectedTab === tab.id
+                      ? 'transform scale-105'
+                      : 'hover:scale-102'
+                  }`}
+                >
+                  {/* 선택된 탭 배경 */}
+                  {selectedTab === tab.id && (
+                    <div className={`absolute inset-0 bg-gradient-to-r ${tab.color} rounded-xl shadow-lg transform transition-all duration-300`} />
+                  )}
+                  
+                  {/* 탭 내용 */}
+                  <div className={`relative px-6 py-4 rounded-xl transition-all duration-300 ${
+                    selectedTab === tab.id
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
+                  }`}>
+                    {/* 아이콘과 라벨 */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className={`text-3xl transition-all duration-300 ${
+                        selectedTab === tab.id
+                          ? 'transform scale-110'
+                          : 'group-hover:scale-110'
+                      }`}>
+                        {tab.icon}
+                      </div>
+                      <div className="text-center">
+                        <div className={`font-bold text-sm transition-all duration-300 ${
+                          selectedTab === tab.id
+                            ? 'text-white'
+                            : 'text-gray-700 dark:text-gray-200'
+                        }`}>
+                          {tab.label}
+                        </div>
+                        <div className={`text-xs mt-1 transition-all duration-300 ${
+                          selectedTab === tab.id
+                            ? 'text-blue-100'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {tab.description}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 호버 효과 - 선택되지 않은 탭에만 */}
+                  {selectedTab !== tab.id && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 일일 현황 탭 */}
+        {selectedTab === 'daily' && (
+          <div className="space-y-6">
+            {/* 걸음 수 입력 */}
+            <div className="relative overflow-hidden">
+              {/* 배경 그라데이션 */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl"></div>
+              
+              {/* 패턴 오버레이 */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl"></div>
+              
+              {/* 메인 콘텐츠 */}
+              <div className="relative p-8 text-white">
+                {/* 헤더 */}
+                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                    <div className="text-4xl animate-bounce">🚶‍♀️</div>
+                  <div>
+                      <h2 className="text-3xl font-black mb-1">오늘의 걸음 수</h2>
+                      <p className="text-blue-100 text-lg">목표를 향해 한 걸음씩! 💪</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-yellow-300">목표: 10,000보</div>
+                    <div className="text-sm text-blue-100">하루 목표 달성까지!</div>
+                  </div>
+                </div>
+                
+                {/* 걸음 수 입력 섹션 */}
+                <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white border-opacity-20">
+                  <div className="flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-6xl font-black text-yellow-300 mb-2 animate-pulse">
+                        {dailyStats.steps.toLocaleString()}
+                      </div>
+                      <div className="text-2xl font-bold">보</div>
+                    </div>
+                  </div>
+                  
+                  {/* 진행률 바 */}
+                  <div className="mt-6">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>진행률</span>
+                      <span>{Math.min(100, Math.round((dailyStats.steps / 10000) * 100))}%</span>
+                    </div>
+                    <div className="w-full bg-white bg-opacity-20 rounded-full h-4 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${Math.min(100, (dailyStats.steps / 10000) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 칼로리 정보 */}
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-center">
+                  <div className="text-2xl font-bold mb-1">🔥 예상 소모 칼로리</div>
+                  <div className="text-4xl font-black">{dailyStats.calories} kcal</div>
+                  <div className="text-sm text-orange-100">오늘도 열심히 운동한 당신을 응원합니다! 🎉</div>
+                </div>
+              </div>
+            </div>
+
+
+
+            {/* 주간 그래프 */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-8 text-white">
+              {/* 배경 패턴 */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl"></div>
+              
+              <div className="relative">
+                {/* 헤더 */}
+                <div className="text-center mb-8">
+                  <div className="flex items-center justify-center space-x-3 mb-2">
+                    <div className="text-4xl animate-pulse">📈</div>
+                    <h3 className="text-3xl font-black">이번 주 걸음 수</h3>
+                    <button
+                      onClick={() => {
+                        setShowCalendar(!showCalendar);
+                        // 모달이 열릴 때 차트 초기화를 위한 강제 리렌더링
+                        if (!showCalendar) {
+                          setTimeout(() => {
+                            const event = new Event('resize');
+                            window.dispatchEvent(event);
+                          }, 100);
+                        }
+                      }}
+                      className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-xl font-bold rounded-lg transition-all duration-300 transform hover:scale-110 border-2 border-white border-opacity-30"
+                    >
+                      {showCalendar ? '✕' : '📅 상세보기'}
+                    </button>
+                    <div className="text-4xl animate-bounce">🚀</div>
+                  </div>
+                  <p className="text-xl text-purple-100">꾸준함이 만드는 건강한 습관! 💪</p>
+                </div>
+                
+                {/* 그래프 뷰 선택 */}
+                <div className="flex justify-center mb-6">
+                  <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-2 border border-white border-opacity-30">
+                    <div className="flex space-x-2">
+                      {[
+                        { id: 'daily', label: '일별', icon: '📊' },
+                        { id: 'weekly', label: '주별', icon: '📈' },
+                        { id: 'monthly', label: '월별', icon: '📅' }
+                      ].map((view) => (
+                        <button
+                          key={view.id}
+                          onClick={() => setGraphView(view.id as 'daily' | 'weekly' | 'monthly')}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                            graphView === view.id
+                              ? 'bg-white text-purple-600 shadow-lg'
+                              : 'text-white hover:bg-white hover:bg-opacity-20'
+                          }`}
+                        >
+                          <span className="mr-2">{view.icon}</span>
+                          {view.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 그래프 */}
+                <div className="flex items-end justify-between h-40 space-x-3">
+                  {graphView === 'daily' && (
+                    // 일별 그래프 (주간)
+                    ['월', '화', '수', '목', '금', '토', '일'].map((day, index) => {
+                      const steps = weeklySteps[index] ?? 0;
+                      const height = Math.min(100, (steps / 10000) * 100);
+                      const isToday = index === mondayBasedTodayIndex;
+
+                      return (
+                        <div key={day} className="flex flex-col items-center">
+                          {/* 걸음 수 (항상 표시) */}
+                          <div className="text-sm font-bold text-yellow-300 mb-2">
+                            {steps.toLocaleString()}
+                          </div>
+
+                          {/* 그래프 바 */}
+                          <div
+                            className={`w-12 rounded-t-2xl transition-all duration-700 ease-out ${
+                              isToday
+                                ? 'bg-gradient-to-t from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/50'
+                                : 'bg-gradient-to-t from-white to-white/80'
+                            }`}
+                            style={{ height: `${height}%` }}
+                          />
+
+                          {/* 요일 */}
+                          <div className={`text-sm font-bold mt-2 ${isToday ? 'text-yellow-300' : 'text-white'}`}>
+                            {day}
+                          </div>
+
+                          {/* 오늘 표시 */}
+                          {isToday && (
+                            <div className="mt-1 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                              오늘
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                  
+                  {graphView === 'weekly' && (
+                    // 주별 그래프 (최근 4주)
+                    ['1주차', '2주차', '3주차', '4주차'].map((week, index) => {
+                      const weekSteps = [weeklySteps, [7500, 8200, 6800, 7900, 6500, 7200, 8500], [8000, 8700, 7200, 8100, 6800, 7500, 8800], [8500, 9200, 7800, 8900, 7600, 8100, 9500]][index];
+                      const totalSteps = weekSteps.reduce((sum, steps) => sum + steps, 0);
+                      const height = Math.min(100, (totalSteps / 70000) * 100);
+                      const isCurrentWeek = index === 0;
+
+                      return (
+                        <div key={week} className="flex flex-col items-center">
+                          {/* 걸음 수 */}
+                          <div className="text-sm font-bold text-yellow-300 mb-2">
+                            {totalSteps.toLocaleString()}
+                          </div>
+
+                          {/* 그래프 바 */}
+                          <div
+                            className={`w-12 rounded-t-2xl transition-all duration-700 ease-out ${
+                              isCurrentWeek
+                                ? 'bg-gradient-to-t from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/50'
+                                : 'bg-gradient-to-t from-white to-white/80'
+                            }`}
+                            style={{ height: `${height}%` }}
+                          />
+
+                          {/* 주차 */}
+                          <div className={`text-sm font-bold mt-2 ${isCurrentWeek ? 'text-yellow-300' : 'text-white'}`}>
+                            {week}
+                          </div>
+
+                          {/* 현재 주 표시 */}
+                          {isCurrentWeek && (
+                            <div className="mt-1 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                              현재
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                  
+                  {graphView === 'monthly' && (
+                    // 월별 그래프 (최근 6개월)
+                    ['1월', '2월', '3월', '4월', '5월', '6월'].map((month, index) => {
+                      const monthSteps = [280000, 265000, 290000, 275000, 300000, 285000][index];
+                      const height = Math.min(100, (monthSteps / 350000) * 100);
+                      const isCurrentMonth = index === 5;
+
+                      return (
+                        <div key={month} className="flex flex-col items-center">
+                          {/* 걸음 수 */}
+                          <div className="text-sm font-bold text-yellow-300 mb-2">
+                            {monthSteps.toLocaleString()}
+                          </div>
+
+                          {/* 그래프 바 */}
+                          <div
+                            className={`w-12 rounded-t-2xl transition-all duration-700 ease-out ${
+                              isCurrentMonth
+                                ? 'bg-gradient-to-t from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/50'
+                                : 'bg-gradient-to-t from-white to-white/80'
+                            }`}
+                            style={{ height: `${height}%` }}
+                          />
+
+                          {/* 월 */}
+                          <div className={`text-sm font-bold mt-2 ${isCurrentMonth ? 'text-yellow-300' : 'text-white'}`}>
+                            {month}
+                          </div>
+
+                          {/* 현재 월 표시 */}
+                          {isCurrentMonth && (
+                            <div className="mt-1 px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                              현재
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* 그래프 뷰별 총계 */}
+                <div className="mt-8 text-center">
+                  <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-4 border border-white border-opacity-30">
+                    {graphView === 'daily' && (
+                      <>
+                        <div className="text-2xl font-bold text-yellow-300 mb-1">이번 주 총 걸음 수</div>
+                        <div className="text-4xl font-black">{weeklySteps.reduce((sum, steps) => sum + steps, 0).toLocaleString()}보</div>
+                        <div className="text-sm text-purple-100 mt-2">평균 {Math.round(weeklySteps.reduce((sum, steps) => sum + steps, 0) / 7).toLocaleString()}보/일 🎯</div>
+                      </>
+                    )}
+                    
+                    {graphView === 'weekly' && (
+                      <>
+                        <div className="text-2xl font-bold text-yellow-300 mb-1">최근 4주 총 걸음 수</div>
+                        <div className="text-4xl font-black">{(weeklySteps.reduce((sum, steps) => sum + steps, 0) + 7500 + 8200 + 6800 + 7900 + 6500 + 7200 + 8500 + 8000 + 8700 + 7200 + 8100 + 6800 + 7500 + 8800 + 8500 + 9200 + 7800 + 8900 + 7600 + 8100 + 9500).toLocaleString()}보</div>
+                        <div className="text-sm text-purple-100 mt-2">주평균 {Math.round((weeklySteps.reduce((sum, steps) => sum + steps, 0) + 7500 + 8200 + 6800 + 7900 + 6500 + 7200 + 8500 + 8000 + 8700 + 7200 + 8100 + 6800 + 7500 + 8800 + 8500 + 9200 + 7800 + 8900 + 7600 + 8100 + 9500) / 28).toLocaleString()}보/일 🎯</div>
+                      </>
+                    )}
+                    
+                    {graphView === 'monthly' && (
+                      <>
+                        <div className="text-2xl font-bold text-yellow-300 mb-1">최근 6개월 총 걸음 수</div>
+                        <div className="text-4xl font-black">{(280000 + 265000 + 290000 + 275000 + 300000 + 285000).toLocaleString()}보</div>
+                        <div className="text-sm text-purple-100 mt-2">월평균 {Math.round((280000 + 265000 + 290000 + 275000 + 300000 + 285000) / 6).toLocaleString()}보/월 🎯</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 캘린더 모달 */}
+            {showCalendar && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                  {/* 캘린더 헤더 */}
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-800">📅 걸음 수 상세 캘린더</h3>
+                    <button
+                      onClick={() => setShowCalendar(false)}
+                      className="text-2xl text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* 탭 네비게이션 */}
+                  <div className="flex space-x-2 mb-6">
+                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium">주간 요약</button>
+                    <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">월간 캘린더</button>
+                    <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">상세 통계</button>
+                  </div>
+
+                  {/* 주간 요약 */}
+                  <div className="space-y-6">
+                    {/* 주간 걸음 수 카드들 */}
+                    <div className="grid grid-cols-7 gap-3 mb-6">
+                      {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => {
+                        const steps = weeklySteps[index] ?? 0;
+                        const isToday = index === mondayBasedTodayIndex;
+                        const isGoalMet = steps >= 10000;
+                        const goalPercentage = Math.min(100, (steps / 10000) * 100);
+                        
+                        return (
+                          <div key={day} className={`text-center p-3 rounded-xl border-2 transition-all duration-300 ${
+                            isToday 
+                              ? 'border-yellow-400 bg-yellow-50 shadow-lg' 
+                              : 'border-gray-200 bg-gray-50'
+                          }`}>
+                            <div className="text-sm font-bold text-gray-600 mb-2">{day}</div>
+                            <div className={`rounded-lg p-3 mb-2 ${
+                              isGoalMet 
+                                ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
+                                : 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                            } text-white`}>
+                              <div className="text-lg font-bold">{steps.toLocaleString()}</div>
+                              <div className="text-xs opacity-90">보</div>
+                            </div>
+                            
+                            {/* 목표 달성 표시 */}
+                            <div className="text-xs font-medium">
+                              {isGoalMet && (
+                                <span className="text-green-600">🎯 달성!</span>
+                              )}
+                            </div>
+                            
+                            {/* 오늘 표시 */}
+                            {isToday && (
+                              <div className="mt-2 px-2 py-1 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                                오늘
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 주간 통계 요약 */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-4 text-white">
+                        <div className="text-sm opacity-90 mb-1">이번 주 총 걸음 수</div>
+                        <div className="text-2xl font-bold">{weeklySteps.reduce((sum, steps) => sum + steps, 0).toLocaleString()}보</div>
+                        <div className="text-xs opacity-90 mt-1">
+                          평균 {Math.round(weeklySteps.reduce((sum, steps) => sum + steps, 0) / 7).toLocaleString()}보/일
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 text-white">
+                        <div className="text-sm opacity-90 mb-1">목표 달성 일수</div>
+                        <div className="text-2xl font-bold">
+                          {weeklySteps.filter(steps => steps >= 10000).length}/7일
+                        </div>
+                        <div className="text-xs opacity-90 mt-1">
+                          {Math.round((weeklySteps.filter(steps => steps >= 10000).length / 7) * 100)}% 달성률
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 text-white">
+                        <div className="text-sm opacity-90 mb-1">주간 트렌드</div>
+                        <div className="text-2xl font-bold">
+                          {weeklySteps[weeklySteps.length - 1] > weeklySteps[0] ? '📈 상승' : '📉 하락'}
+                        </div>
+                        <div className="text-xs opacity-90 mt-1">
+                          {weeklySteps[weeklySteps.length - 1] > weeklySteps[0] 
+                            ? `+${(weeklySteps[weeklySteps.length - 1] - weeklySteps[0]).toLocaleString()}보`
+                            : `${(weeklySteps[0] - weeklySteps[weeklySteps.length - 1]).toLocaleString()}보 감소`
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 상세 통계 */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-3">📊 상세 통계</h4>
+                      
+                      {/* 최고 기록 */}
+                      <div className="mb-4">
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-4 text-white">
+                          <div className="text-sm opacity-90 mb-2">🏆 최고 기록</div>
+                          <div className="text-2xl font-bold mb-1">{Math.max(...weeklySteps).toLocaleString()}보</div>
+                          <div className="text-sm opacity-90">
+                            {['월', '화', '수', '목', '금', '토', '일'][weeklySteps.indexOf(Math.max(...weeklySteps))]}요일 달성
+                          </div>
+                          <div className="text-xs opacity-90 mt-1">
+                            목표 대비 {Math.round((Math.max(...weeklySteps) / 10000) * 100)}% 달성
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 주간 트렌드 상세 */}
+                    <div className="bg-gray-100 rounded-xl p-4">
+                        <h5 className="font-semibold text-gray-800 mb-3">걸음수 진행률</h5>
+                        
+                        {/* 라인 그래프 */}
+                        <div className="bg-white rounded-lg p-6 mb-4">
+                          <div className="relative h-48">
+                            {/* Chart.js 그래프 */}
+                            <div style={{ width: '100%', height: '200px', position: 'relative' }}>
+                              <canvas ref={chartCanvasRef} id="stepsChart" style={{ width: '100%', height: '100%' }}></canvas>
+                            </div>
+                          </div>
+                          
+                          {/* X축 날짜 라벨 (그래프 아래쪽, 여백 확보) */}
+                          <div className="flex justify-between mt-8 px-6">
+                            {weeklySteps.map((steps, index) => {
+                              const today = new Date();
+                              const dayOffset = index - mondayBasedTodayIndex;
+                              const date = new Date(today);
+                              date.setDate(today.getDate() + dayOffset);
+                              const month = date.getMonth() + 1;
+                              const day = date.getDate();
+                              
+                              return (
+                                <div key={index} className="text-center relative">
+                                  {/* 날짜 위치에 점 표시 */}
+                                  <div className="w-2 h-2 bg-gray-300 rounded-full mx-auto mb-2"></div>
+                                  <div className="text-xs text-gray-600 font-medium">
+                                    {month}/{day}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        {/* 요약 통계 */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="bg-white rounded-lg p-3 text-center">
+                            <div className="text-sm text-gray-500 mb-1">최고 기록</div>
+                            <div className="text-lg font-bold text-green-600">
+                              {Math.max(...weeklySteps).toLocaleString()}보
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {['월', '화', '수', '목', '금', '토', '일'][weeklySteps.indexOf(Math.max(...weeklySteps))]}요일
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white rounded-lg p-3 text-center">
+                            <div className="text-sm text-gray-500 mb-1">평균</div>
+                            <div className="text-lg font-bold text-blue-600">
+                              {Math.round(weeklySteps.reduce((sum, steps) => sum + steps, 0) / 7).toLocaleString()}보
+                            </div>
+                            <div className="text-xs text-gray-400">일평균</div>
+                          </div>
+                          
+                          <div className="bg-white rounded-lg p-3 text-center">
+                            <div className="text-sm text-gray-500 mb-1">목표 달성</div>
+                            <div className="text-lg font-bold text-purple-600">
+                              {weeklySteps.filter(steps => steps >= 10000).length}/7일
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {Math.round((weeklySteps.filter(steps => steps >= 10000).length / 7) * 100)}% 달성
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* 걸음수 분석 */}
+                        <div className="bg-white rounded-lg p-4">
+                          <h6 className="font-semibold text-gray-800 mb-3">📈 걸음수 분석</h6>
+                          <div className="space-y-2 text-sm">
+                            {weeklySteps.map((steps, index) => {
+                              const prevSteps = index > 0 ? weeklySteps[index - 1] : null;
+                              const change = prevSteps ? steps - prevSteps : 0;
+                              const changePercent = prevSteps ? Math.round((change / prevSteps) * 100) : 0;
+                              const isToday = index === mondayBasedTodayIndex;
+                              
+                              return (
+                                <div key={index} className={`flex items-center justify-between p-2 rounded ${
+                                  isToday ? 'bg-yellow-50' : 'bg-gray-50'
+                                }`}>
+                                  <div className="flex items-center space-x-3">
+                                    <span className={`font-medium ${isToday ? 'text-yellow-700' : 'text-gray-700'}`}>
+                                      {['월', '화', '수', '목', '금', '토', '일'][index]}
+                                      {isToday && <span className="ml-2 text-xs bg-yellow-400 text-black px-2 py-1 rounded-full">오늘</span>}
+                                    </span>
+                                    <span className="text-gray-600">{steps.toLocaleString()}보</span>
+                                  </div>
+                                  
+                                  {prevSteps && (
+                                    <div className={`text-sm font-medium ${
+                                      change > 0 ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-500'
+                                    }`}>
+                                      {change > 0 ? '⬆️' : change < 0 ? '⬇️' : '➡️'} 
+                                      {change > 0 ? '+' : ''}{change.toLocaleString()}보
+                                      <span className="ml-1">
+                                        ({changePercent > 0 ? '+' : ''}{changePercent}%)
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        {/* 주간 목표 및 권장사항 */}
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-white">
+                          <h5 className="font-semibold mb-3">💡 주간 목표 및 권장사항</h5>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center space-x-2">
+                              <span>🎯</span>
+                              <span>주간 목표: 70,000보 (하루 평균 10,000보)</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span>📊</span>
+                              <span>현재 진행률: {Math.round((weeklySteps.reduce((sum, steps) => sum + steps, 0) / 70000) * 100)}%</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span>⏰</span>
+                              <span>남은 기간: {7 - new Date().getDay()}일</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span>💪</span>
+                              <span>권장사항: {weeklySteps.filter(steps => steps >= 10000).length < 4 ? '더 많은 날에 목표를 달성해보세요!' : '훌륭합니다! 꾸준함을 유지하세요!'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* 랭킹 탭 */}
+      {selectedTab === 'ranking' && (
+        <div className="space-y-6">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+              🏆 걸음수 랭킹
+            </h2>
+            <p className="text-xl text-text-secondary">매일의 노력이 만들어가는 순위! 💪</p>
+          </div>
+
+          {/* 랭킹 기간 선택 */}
+          <div className="flex justify-center space-x-4 mb-8">
+            {['일간', '주간', '월간'].map((period) => (
+              <button
+                key={period}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+
+          {/* 일간 랭킹 */}
+          <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-6 text-center">📅 오늘의 걸음수 랭킹</h3>
+            <div className="space-y-4">
+              {[
+                { rank: 1, name: '🔥 불꽃러너', steps: 15800, avatar: '🔥', level: '마스터' },
+                { rank: 2, name: '💨 바람의속도', steps: 14200, avatar: '💨', level: '전문가' },
+                { rank: 3, name: '⚡ 번개맨', steps: 13800, avatar: '⚡', level: '고급자' },
+                { rank: 4, name: '🚀 로켓걸음', steps: 12500, avatar: '🚀', level: '중급자' },
+                { rank: 5, name: '🏃‍♂️ 마라토너', steps: 11800, avatar: '🏃‍♂️', level: '초급자' }
+              ].map((user) => (
+                <div key={user.rank} className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-4 border border-white border-opacity-20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="text-3xl">{user.avatar}</div>
+                      <div>
+                        <div className="font-bold text-lg">{user.name}</div>
+                        <div className="text-sm text-blue-100">{user.level}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-yellow-300">{user.rank}</div>
+                      <div className="text-sm text-blue-100">위</div>
+                      <div className="text-lg font-bold">{user.steps.toLocaleString()}보</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 주간 랭킹 */}
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-6 text-center">📊 이번 주 걸음수 랭킹</h3>
+            <div className="space-y-4">
+              {[
+                { rank: 1, name: '🔥 불꽃러너', steps: 125000, avatar: '🔥', level: '마스터' },
+                { rank: 2, name: '💨 바람의속도', steps: 118000, avatar: '💨', level: '전문가' },
+                { rank: 3, name: '⚡ 번개맨', steps: 112000, avatar: '⚡', level: '고급자' },
+                { rank: 4, name: '🚀 로켓걸음', steps: 108000, avatar: '🚀', level: '중급자' },
+                { rank: 5, name: '🏃‍♂️ 마라토너', steps: 105000, avatar: '🏃‍♂️', level: '초급자' }
+              ].map((user) => (
+                <div key={user.rank} className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-4 border border-white border-opacity-20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="text-3xl">{user.avatar}</div>
+                      <div>
+                        <div className="font-bold text-lg">{user.name}</div>
+                        <div className="text-sm text-green-100">{user.level}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-yellow-300">{user.rank}</div>
+                      <div className="text-sm text-green-100">위</div>
+                      <div className="text-lg font-bold">{user.steps.toLocaleString()}보</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 월간 랭킹 */}
+          <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-6 text-center">📈 이번 달 걸음수 랭킹</h3>
+            <div className="space-y-4">
+              {[
+                { rank: 1, name: '🔥 불꽃러너', steps: 485000, avatar: '🔥', level: '마스터' },
+                { rank: 2, name: '💨 바람의속도', steps: 452000, avatar: '💨', level: '전문가' },
+                { rank: 3, name: '⚡ 번개맨', steps: 438000, avatar: '⚡', level: '고급자' },
+                { rank: 4, name: '🚀 로켓걸음', steps: 425000, avatar: '🚀', level: '중급자' },
+                { rank: 5, name: '🏃‍♂️ 마라토너', steps: 398000, avatar: '🏃‍♂️', level: '초급자' }
+              ].map((user) => (
+                <div key={user.rank} className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-4 border border-white border-opacity-20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="text-3xl">{user.avatar}</div>
+              <div>
+                        <div className="font-bold text-lg">{user.name}</div>
+                        <div className="text-sm text-orange-100">{user.level}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-yellow-300">{user.rank}</div>
+                      <div className="text-sm text-orange-100">위</div>
+                      <div className="text-lg font-bold">{user.steps.toLocaleString()}보</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 신박 챌린지 탭 */}
+      {selectedTab === 'fun' && (
+        <div className="space-y-6">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+              🎪 신박한 챌린지
+            </h2>
+            <p className="text-xl text-text-secondary">엉뚱하고 재미있는 도전으로 운동을 즐겨보세요! 🎭</p>
+          </div>
+
+          {/* 신박 챌린지 카테고리 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 음식 관련 챌린지 */}
+            <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-3xl p-6 text-white">
+              <h3 className="text-2xl font-bold mb-4 text-center">🍕 음식 챌린지</h3>
+              <div className="space-y-4">
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">🍎 사과 1개 먹고 1000보 걷기</h4>
+                  <p className="text-sm text-pink-100 mb-3">사과를 먹은 후 바로 1000보를 걸어보세요!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 234명</span>
+                    <button className="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">☕ 커피 마시고 30분 운동</h4>
+                  <p className="text-sm text-pink-100 mb-3">카페인 효과로 더 강하게 운동해보세요!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 156명</span>
+                    <button className="px-4 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 장소 관련 챌린지 */}
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl p-6 text-white">
+              <h3 className="text-2xl font-bold mb-4 text-center">🏠 장소 챌린지</h3>
+              <div className="space-y-4">
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">🏢 엘리베이터 대신 계단 이용</h4>
+                  <p className="text-sm text-blue-100 mb-3">하루 종일 계단만 사용해보세요!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 89명</span>
+                    <button className="px-4 py-2 bg-cyan-400 text-black rounded-lg font-bold hover:bg-cyan-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">🚶‍♀️ 집에서 가장 먼 곳까지 걷기</h4>
+                  <p className="text-sm text-blue-100 mb-3">집 안에서 가장 긴 경로를 찾아 걸어보세요!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 67명</span>
+                    <button className="px-4 py-2 bg-cyan-400 text-black rounded-lg font-bold hover:bg-cyan-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 시간 관련 챌린지 */}
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl p-6 text-white md:col-span-2">
+              <h3 className="text-2xl font-bold mb-4 text-center">⏰ 시간 챌린지</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">🌅 새벽 6시 운동</h4>
+                  <p className="text-sm text-green-100 mb-3">일주일 연속 새벽 운동!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 45명</span>
+                    <button className="px-4 py-2 bg-emerald-400 text-black rounded-lg font-bold hover:bg-emerald-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">🌙 밤 11시 전 취침</h4>
+                  <p className="text-sm text-green-100 mb-3">일주일 연속 일찍 자기!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 78명</span>
+                    <button className="px-4 py-2 bg-emerald-400 text-black rounded-lg font-bold hover:bg-emerald-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white bg-opacity-15 rounded-2xl p-4">
+                  <h4 className="font-bold text-lg mb-2">⏱️ 1분 플랭크 챌린지</h4>
+                  <p className="text-sm text-green-100 mb-3">매일 1분씩 플랭크!</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">참여자: 123명</span>
+                    <button className="px-4 py-2 bg-emerald-400 text-black rounded-lg font-bold hover:bg-emerald-500 transition-colors">
+                      참여하기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 팀 대결 탭 */}
+      {selectedTab === 'team' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-text-primary">👥 팀 대결</h2>
+            <div className="space-x-2">
+              <button
+                onClick={() => setShowCreateTeam(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                팀 만들기
+              </button>
+              <button
+                onClick={() => setShowCreateMatch(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+              >
+                대결 만들기
+              </button>
+            </div>
+          </div>
+
+          {/* 팀 랭킹 */}
+          <div className="space-y-4">
+            {teams.map((team) => (
+              <div key={team.id} className="bg-background-secondary border border-border-primary rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-3xl">{team.rank === 1 ? '🥇' : '🥈'}</div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-text-primary">{team.name}</h3>
+                      <div className="text-sm text-text-secondary">
+                        구성원 {team.members.length}명 (최대 10명)
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-accent-yellow">{team.rank}위</div>
+                    <div className="text-sm text-text-secondary">총 {team.totalSteps.toLocaleString()}보</div>
+                  </div>
+                </div>
+                
+                {/* 팀 통계 */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background-tertiary rounded-lg p-3 text-center">
+                    <div className="text-lg font-semibold text-text-primary">{team.totalSteps.toLocaleString()}</div>
+                    <div className="text-sm text-text-secondary">총 걸음 수</div>
+                  </div>
+                  <div className="bg-background-tertiary rounded-lg p-3 text-center">
+                    <div className="text-lg font-semibold text-text-primary">{team.totalCalories}</div>
+                    <div className="text-sm text-text-secondary">총 칼로리</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+          {/* 진행 중인/예정된 대결 */}
+          {matches.length > 0 && (
+            <div className="bg-background-secondary border border-border-primary rounded-lg p-6">
+              <h3 className="text-xl font-semibold text-text-primary mb-4">🏁 대결 현황</h3>
+              <div className="space-y-3">
+                {matches.map(m => {
+                  const teamA = teams.find(t => t.id === m.teamAId);
+                  const teamB = teams.find(t => t.id === m.teamBId);
+                  return (
+                    <div key={m.id} className="flex items-center justify-between bg-background-tertiary rounded-lg p-3">
+                      <div className="text-text-primary">
+                        <span className="font-semibold">{teamA?.name}</span> vs <span className="font-semibold">{teamB?.name}</span>
+                        <span className="ml-2 text-sm text-text-secondary">({m.status})</span>
+                      </div>
+                      <div className="text-sm text-text-secondary">
+                        {m.startDate.toLocaleDateString()} ~ {m.endDate.toLocaleDateString()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 팀 만들기 모달 */}
+          {showCreateTeam && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">새로운 팀 만들기 (최대 10명)</h3>
+                  <button className="text-2xl" onClick={() => setShowCreateTeam(false)}>✕</button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">팀 이름</label>
+                    <input value={newTeamName} onChange={e => setNewTeamName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="예) 번개팀" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">구성원 추가 (최대 10명)</label>
+                    <div className="flex gap-2">
+                      <input value={newMemberInput} onChange={e => setNewMemberInput(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg" placeholder="이름 입력 후 추가" />
+                      <button onClick={handleAddMember} className="px-3 py-2 bg-accent-green text-white rounded-lg">추가</button>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {newTeamMembers.map(name => (
+                        <span key={name} className="px-2 py-1 bg-gray-100 rounded-lg text-sm">
+                          {name}
+                          <button onClick={() => handleRemoveMember(name)} className="ml-1 text-gray-500 hover:text-gray-700">✕</button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500">현재 {newTeamMembers.length}명 / 최대 10명</div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => setShowCreateTeam(false)} className="px-4 py-2 border rounded-lg">취소</button>
+                    <button onClick={handleCreateTeam} className="px-4 py-2 bg-accent-blue text-white rounded-lg">팀 생성</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 대결 만들기 모달 */}
+          {showCreateMatch && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">대결 만들기 (최대 10명 vs 10명)</h3>
+                  <button className="text-2xl" onClick={() => setShowCreateMatch(false)}>✕</button>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">팀 A</label>
+                      <select value={selectedTeamAId} onChange={e => setSelectedTeamAId(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+                        <option value="">선택하세요</option>
+                        {teams.map(t => (
+                          <option key={t.id} value={t.id}>{t.name} ({t.members.length}명)</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">팀 B</label>
+                      <select value={selectedTeamBId} onChange={e => setSelectedTeamBId(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+                        <option value="">선택하세요</option>
+                        {teams.map(t => (
+                          <option key={t.id} value={t.id}>{t.name} ({t.members.length}명)</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">시작일</label>
+                      <input type="date" value={matchStartDate} onChange={e => setMatchStartDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">종료일</label>
+                      <input type="date" value={matchEndDate} onChange={e => setMatchEndDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => setShowCreateMatch(false)} className="px-4 py-2 border rounded-lg">취소</button>
+                    <button onClick={handleCreateMatch} className="px-4 py-2 bg-accent-green text-white rounded-lg">대결 생성</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+      </div>
+      )}
+    </>
+  );
+};
+
+export default WorkoutRecommendations;

@@ -1,121 +1,136 @@
-import React, { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 interface ResetPasswordFormProps {
-  onSwitchToLogin: () => void
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+  onSwitchToLogin?: () => void;
 }
 
-export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ onSwitchToLogin }) => {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  
-  const { resetPassword } = useAuth()
+const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ 
+  onSuccess, 
+  onError, 
+  onSwitchToLogin 
+}) => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    
+    if (!email) {
+      if (onError) {
+        onError('이메일을 입력해주세요.');
+      }
+      return;
+    }
 
     try {
-      const { error } = await resetPassword(email)
-      
-      if (error) {
-        setError(error.message)
-      } else {
-        setSuccess(true)
-      }
-    } catch (err) {
-      setError('비밀번호 재설정 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
+      setLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback`
+      });
 
-  if (success) {
+      if (error) {
+        throw error;
+      }
+
+      setSent(true);
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error: any) {
+      console.error('비밀번호 재설정 오류:', error);
+      if (onError) {
+        onError(error.message || '비밀번호 재설정에 실패했습니다.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
     return (
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      <div className="panel-container max-w-md mx-auto text-center">
+        <div className="mb-6">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-status-activeBackground mb-4">
+            <svg className="h-8 w-8 text-status-activeText" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            이메일 전송 완료!
+          <h2 className="text-panel-header font-panel-header text-text-primary mb-2">
+            이메일 전송 완료
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            입력하신 이메일로 비밀번호 재설정 링크를 보냈습니다.
+          <p className="text-body font-body text-text-secondary">
+            {email}로 비밀번호 재설정 링크를 전송했습니다.<br />
             이메일을 확인하여 비밀번호를 재설정해주세요.
           </p>
+        </div>
+        
+        {onSwitchToLogin && (
           <button
-            type="button"
             onClick={onSwitchToLogin}
-            className="mt-4 font-medium text-indigo-600 hover:text-indigo-500"
+            className="utility-button w-full py-3 px-4 text-body font-body font-medium transition-all duration-200 hover:scale-105"
           >
             로그인으로 돌아가기
           </button>
-        </div>
+        )}
       </div>
-    )
+    );
   }
 
   return (
-    <div className="max-w-md w-full space-y-8">
-      <div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+    <div className="panel-container max-w-md mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-panel-header font-panel-header text-text-primary mb-2">
           비밀번호 재설정
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
+        <p className="text-body font-body text-text-secondary">
+          가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다
         </p>
       </div>
-      
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-        
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-label font-label text-text-secondary mb-2">
             이메일
           </label>
           <input
             id="email"
-            name="email"
             type="email"
-            autoComplete="email"
-            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="이메일을 입력하세요"
+            className="form-input w-full px-4 py-3"
+            placeholder="가입한 이메일을 입력하세요"
+            required
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onSwitchToLogin}
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            로그인으로 돌아가기
-          </button>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? '전송 중...' : '비밀번호 재설정 링크 전송'}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="utility-button w-full py-3 px-4 text-body font-body font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? '전송 중...' : '재설정 링크 전송'}
+        </button>
       </form>
+
+      {onSwitchToLogin && (
+        <div className="mt-6 text-center">
+          <div className="text-body font-body text-text-secondary">
+            비밀번호를 기억하셨나요?{' '}
+            <button
+              onClick={onSwitchToLogin}
+              className="text-accent-blue hover:text-accent-blue/80 transition-colors duration-200"
+            >
+              로그인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
+
+export default ResetPasswordForm;

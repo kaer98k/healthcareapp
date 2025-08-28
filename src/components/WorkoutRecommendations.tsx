@@ -1,228 +1,326 @@
 import React, { useState } from 'react';
-// 타입은 any로 사용하여 import 문제 해결
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Yoga, Heart, Dumbbell } from './icons';
-import { AddressDisplay } from './AddressDisplay';
 
-interface WorkoutRecommendationsProps {
-  recommendations: any[];
-  userProfile: any;
-  onBack: () => void;
+interface DailyStats {
+  steps: number;
+  calories: number;
 }
 
-export const WorkoutRecommendations: React.FC<WorkoutRecommendationsProps> = ({
-  recommendations,
-  userProfile,
-  onBack
-}) => {
-  const [selectedWorkout, setSelectedWorkout] = useState<any | null>(null);
+interface Team {
+  id: string;
+  name: string;
+  members: string[];
+}
 
-  const getWorkoutIcon = (type: string) => {
-    if (type.includes('근력')) return <Dumbbell className="h-6 w-6" />;
-    if (type.includes('유산소')) return <Heart className="h-6 w-6" />;
-    if (type.includes('요가')) return <Yoga className="h-6 w-6" />;
-    return <Dumbbell className="h-6 w-6" />;
+interface Match {
+  id: string;
+  teamA: string;
+  teamB: string;
+  startDate: string;
+  endDate: string;
+  teamAScore: number;
+  teamBScore: number;
+}
+
+const WorkoutRecommendations: React.FC = () => {
+  // 기본 상태 관리
+  const [selectedTab, setSelectedTab] = useState<'daily' | 'ranking' | 'fun' | 'team'>('daily');
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [showCreateMatch, setShowCreateMatch] = useState(false);
+  
+  // 기본 데이터 상태
+  const [dailyStats, setDailyStats] = useState<DailyStats>({ steps: 8500, calories: 425 });
+  const [weeklySteps, setWeeklySteps] = useState<number[]>([8500, 9200, 7800, 10500, 8900, 7600, 8200]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  
+  // 폼 상태
+  const [newTeamName, setNewTeamName] = useState('');
+  const [newMemberInput, setNewMemberInput] = useState('');
+  const [newTeamMembers, setNewTeamMembers] = useState<string[]>([]);
+  const [selectedTeamAId, setSelectedTeamAId] = useState('');
+  const [selectedTeamBId, setSelectedTeamBId] = useState('');
+  const [matchStartDate, setMatchStartDate] = useState('');
+  const [matchEndDate, setMatchEndDate] = useState('');
+
+  // 기본 핸들러 함수들
+  const handleCreateTeam = () => {
+    if (newTeamName.trim() && newTeamMembers.length > 0) {
+      const newTeam: Team = {
+        id: Date.now().toString(),
+        name: newTeamName,
+        members: newTeamMembers
+      };
+      setTeams([...teams, newTeam]);
+      setNewTeamName('');
+      setNewTeamMembers([]);
+      setShowCreateTeam(false);
+    }
   };
 
-  const getWorkoutColor = (type: string) => {
-    if (type.includes('근력')) return 'bg-blue-50 border-blue-200';
-    if (type.includes('유산소')) return 'bg-red-50 border-red-200';
-    if (type.includes('요가')) return 'bg-green-50 border-green-200';
-    return 'bg-gray-50 border-gray-200';
+  const handleAddMember = () => {
+    if (newMemberInput.trim() && newTeamMembers.length < 10) {
+      setNewTeamMembers([...newTeamMembers, newMemberInput.trim()]);
+      setNewMemberInput('');
+    }
   };
 
-  const getWorkoutTextColor = (type: string) => {
-    if (type.includes('근력')) return 'text-blue-800';
-    if (type.includes('유산소')) return 'text-red-800';
-    if (type.includes('요가')) return 'text-green-800';
-    return 'text-gray-800';
+  const handleRemoveMember = (name: string) => {
+    setNewTeamMembers(newTeamMembers.filter(member => member !== name));
   };
 
-  if (selectedWorkout) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={() => setSelectedWorkout(null)}>
-            ← 추천 목록으로
-          </Button>
-          <h2 className="text-2xl font-bold text-gray-800">{selectedWorkout.type}</h2>
-        </div>
-
-        <Card className="border-2 border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-xl text-blue-800">운동 개요</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="text-center p-4 bg-white rounded-lg">
-                <p className="text-sm text-gray-600">예상 소요 시간</p>
-                <p className="text-2xl font-bold text-blue-600">{selectedWorkout.duration}분</p>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg">
-                <p className="text-sm text-gray-600">예상 칼로리</p>
-                <p className="text-2xl font-bold text-blue-600">{selectedWorkout.calories}kcal</p>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg">
-                <p className="text-sm text-gray-600">난이도</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {selectedWorkout.difficulty === 'beginner' ? '초보자' :
-                   selectedWorkout.difficulty === 'intermediate' ? '중급자' : '고급자'}
-                </p>
-              </div>
-            </div>
-            <p className="text-gray-700 text-lg">{selectedWorkout.description}</p>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-800">운동 루틴</h3>
-          {selectedWorkout.exercises.map((exercise, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-800">{exercise.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    {exercise.sets && exercise.reps && (
-                      <p className="text-gray-700">
-                        <span className="font-semibold">세트:</span> {exercise.sets}세트
-                      </p>
-                    )}
-                    {exercise.sets && exercise.reps && (
-                      <p className="text-gray-700">
-                        <span className="font-semibold">반복:</span> {exercise.reps}회
-                      </p>
-                    )}
-                    {exercise.time && (
-                      <p className="text-gray-700">
-                        <span className="font-semibold">시간:</span> {exercise.time}분
-                      </p>
-                    )}
-                    {exercise.intensity && (
-                      <p className="text-gray-700">
-                        <span className="font-semibold">강도:</span> {exercise.intensity}
-                      </p>
-                    )}
-                    <p className="text-gray-700">
-                      <span className="font-semibold">휴식:</span> {exercise.restTime}초
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600 italic">{exercise.description}</p>
-                    {exercise.progression && (
-                      <div className="mt-2 p-3 bg-blue-100 rounded-lg">
-                        <p className="text-sm font-semibold text-blue-800">진행 방법:</p>
-                        <p className="text-sm text-blue-700">{exercise.progression}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="font-semibold text-yellow-800 mb-2">💡 운동 팁</h4>
-          <ul className="text-sm text-yellow-700 space-y-1">
-            <li>• 운동 전후로 충분한 스트레칭을 해주세요</li>
-            <li>• 적절한 휴식과 수분 섭취를 잊지 마세요</li>
-            <li>• 본인의 체력에 맞는 강도로 시작하세요</li>
-            <li>• 꾸준함이 가장 중요한 운동의 비결입니다</li>
-            <li>• 통증이 느껴지면 즉시 운동을 중단하세요</li>
-          </ul>
-        </div>
-      </div>
-    );
-  }
+  const handleCreateMatch = () => {
+    if (selectedTeamAId && selectedTeamBId && matchStartDate && matchEndDate) {
+      const newMatch: Match = {
+        id: Date.now().toString(),
+        teamA: selectedTeamAId,
+        teamB: selectedTeamBId,
+        startDate: matchStartDate,
+        endDate: matchEndDate,
+        teamAScore: 0,
+        teamBScore: 0
+      };
+      setMatches([...matches, newMatch]);
+      setSelectedTeamAId('');
+      setSelectedTeamBId('');
+      setMatchStartDate('');
+      setMatchEndDate('');
+      setShowCreateMatch(false);
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          안녕하세요, <span className="text-blue-600">{userProfile.name}</span>님! ✨
-        </h2>
-        <p className="text-xl text-gray-600">
-          {userProfile.fitnessGoal === 'weight_loss' && '체중 감량을 위한 맞춤형 운동을 추천해드립니다!'}
-          {userProfile.fitnessGoal === 'muscle_gain' && '근육량 증가를 위한 맞춤형 운동을 추천해드립니다!'}
-          {userProfile.fitnessGoal === 'strength' && '근력 향상을 위한 맞춤형 운동을 추천해드립니다!'}
-          {userProfile.fitnessGoal === 'endurance' && '지구력 향상을 위한 맞춤형 운동을 추천해드립니다!'}
-          {userProfile.fitnessGoal === 'flexibility' && '유연성 향상을 위한 맞춤형 운동을 추천해드립니다!'}
-          {userProfile.fitnessGoal === 'general_fitness' && '전반적인 건강을 위한 맞춤형 운동을 추천해드립니다!'}
-        </p>
-        
-        {/* 주소 정보 표시 */}
-        {userProfile.address && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg inline-block">
-            <AddressDisplay 
-              address={userProfile.address} 
-              zipCode={userProfile.zipCode}
-              className="text-center"
-            />
+    <>
+      <div className="max-w-6xl mx-auto p-6">
+        {/* 헤더 */}
+        <div className="text-center mb-12 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 opacity-10 rounded-3xl blur-3xl transform scale-150"></div>
+          
+          <div className="relative">
+            <div className="inline-flex items-center space-x-4 mb-4">
+              <div className="text-6xl animate-bounce">🏆</div>
+              <h1 className="text-6xl font-black bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                챌린지
+              </h1>
+              <div className="text-6xl animate-pulse">🔥</div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-2xl font-bold text-text-primary">매일의 참여로 건강한 습관을 만들어보세요!</p>
+              <p className="text-lg text-text-secondary">열정을 불태우고 목표를 달성하세요! 💪</p>
+            </div>
+            
+            <div className="flex justify-center space-x-4 mt-6">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse">
+                🚀 도전하세요!
+              </div>
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse" style={{animationDelay: '0.5s'}}>
+                💪 포기하지 마세요!
+              </div>
+              <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse" style={{animationDelay: '1s'}}>
+                🎯 목표를 향해!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 탭 네비게이션 */}
+        <div className="flex justify-center mb-12">
+          <div className="relative bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-2 shadow-xl border border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-1">
+              {[
+                { 
+                  id: 'daily', 
+                  label: '일일 현황', 
+                  icon: '📊',
+                  description: '오늘의 활동 현황',
+                  color: 'from-blue-500 to-cyan-500'
+                },
+                { 
+                  id: 'ranking', 
+                  label: '랭킹', 
+                  icon: '🏆',
+                  description: '걸음수 순위',
+                  color: 'from-purple-500 to-pink-500'
+                },
+                { 
+                  id: 'fun', 
+                  label: '신박 챌린지', 
+                  icon: '🎪',
+                  description: '엉뚱한 도전',
+                  color: 'from-yellow-500 to-orange-500'
+                },
+                { 
+                  id: 'team', 
+                  label: '팀 대결', 
+                  icon: '👥',
+                  description: '팀워크로 승리',
+                  color: 'from-red-500 to-pink-500'
+                }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedTab(tab.id as any)}
+                  className={`relative group transition-all duration-300 ease-out ${
+                    selectedTab === tab.id
+                      ? 'transform scale-105'
+                      : 'hover:scale-102'
+                  }`}
+                >
+                  {selectedTab === tab.id && (
+                    <div className={`absolute inset-0 bg-gradient-to-r ${tab.color} rounded-xl shadow-lg transform transition-all duration-300`} />
+                  )}
+                  
+                  <div className={`relative px-6 py-4 rounded-xl transition-all duration-300 ${
+                    selectedTab === tab.id
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white'
+                  }`}>
+                    <div className="flex flex-col items-center space-y-2">
+                      <div className={`text-3xl transition-all duration-300 ${
+                        selectedTab === tab.id
+                          ? 'transform scale-110'
+                          : 'group-hover:scale-110'
+                      }`}>
+                        {tab.icon}
+                      </div>
+                      <div className="text-center">
+                        <div className="font-bold text-lg">{tab.label}</div>
+                        <div className="text-xs opacity-75">{tab.description}</div>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 탭 내용 */}
+        {selectedTab === 'daily' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">일일 현황</h2>
+              <p>오늘의 걸음 수: {dailyStats.steps.toLocaleString()}보</p>
+              <p>소모 칼로리: {dailyStats.calories} kcal</p>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'ranking' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">랭킹</h2>
+              <p>걸음 수 랭킹이 여기에 표시됩니다.</p>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'fun' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">신박 챌린지</h2>
+              <p>재미있는 챌린지가 여기에 표시됩니다.</p>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'team' && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">팀 대결</h2>
+              <p>팀 대결 정보가 여기에 표시됩니다.</p>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {recommendations.map((recommendation, index) => (
-          <Card 
-            key={index} 
-            className={`cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl border-2 ${getWorkoutColor(recommendation.type)}`}
-            onClick={() => setSelectedWorkout(recommendation)}
-          >
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-2">
-                {getWorkoutIcon(recommendation.type)}
+      {/* 팀 만들기 모달 */}
+      {showCreateTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">새로운 팀 만들기 (최대 10명)</h3>
+              <button className="text-2xl" onClick={() => setShowCreateTeam(false)}>✕</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">팀 이름</label>
+                <input value={newTeamName} onChange={e => setNewTeamName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="예) 번개팀" />
               </div>
-              <CardTitle className={`text-xl ${getWorkoutTextColor(recommendation.type)}`}>
-                {recommendation.type}
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                {recommendation.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-center">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">소요 시간:</span>
-                  <span className="font-semibold text-gray-800">{recommendation.duration}분</span>
+              <div>
+                <label className="block text-sm font-medium mb-1">구성원 추가 (최대 10명)</label>
+                <div className="flex gap-2">
+                  <input value={newMemberInput} onChange={e => setNewMemberInput(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg" placeholder="이름 입력 후 추가" />
+                  <button onClick={handleAddMember} className="px-3 py-2 bg-accent-green text-white rounded-lg">추가</button>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">예상 칼로리:</span>
-                  <span className="font-semibold text-gray-800">{recommendation.calories}kcal</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {newTeamMembers.map(name => (
+                    <span key={name} className="px-2 py-1 bg-gray-100 rounded-lg text-sm">
+                      {name}
+                      <button onClick={() => handleRemoveMember(name)} className="ml-1 text-gray-500 hover:text-gray-700">✕</button>
+                    </span>
+                  ))}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">난이도:</span>
-                  <span className="font-semibold text-gray-800">
-                    {recommendation.difficulty === 'beginner' ? '초보자' :
-                     recommendation.difficulty === 'intermediate' ? '중급자' : '고급자'}
-                  </span>
-                </div>
-                <div className="pt-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedWorkout(recommendation);
-                    }}
-                  >
-                    자세히 보기
-                  </Button>
-                </div>
+                <div className="mt-1 text-xs text-gray-500">현재 {newTeamMembers.length}명 / 최대 10명</div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowCreateTeam(false)} className="px-4 py-2 border rounded-lg">취소</button>
+                <button onClick={handleCreateTeam} className="px-3 py-2 bg-accent-blue text-white rounded-lg">팀 생성</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <div className="flex justify-center">
-        <Button variant="outline" onClick={onBack}>
-          ← 새로운 추천 받기
-        </Button>
-      </div>
-    </div>
+      {/* 대결 만들기 모달 */}
+      {showCreateMatch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">대결 만들기 (최대 10명 vs 10명)</h3>
+              <button className="text-2xl" onClick={() => setShowCreateMatch(false)}>✕</button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">팀 A</label>
+                  <select value={selectedTeamAId} onChange={e => setSelectedTeamAId(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+                    <option value="">선택하세요</option>
+                    {teams.map(t => (
+                      <option key={t.id} value={t.id}>{t.name} ({t.members.length}명)</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">팀 B</label>
+                  <select value={selectedTeamBId} onChange={e => setSelectedTeamBId(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+                    <option value="">선택하세요</option>
+                    {teams.map(t => (
+                      <option key={t.id} value={t.id}>{t.name} ({t.members.length}명)</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">시작일</label>
+                  <input type="date" value={matchStartDate} onChange={e => setMatchStartDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">종료일</label>
+                  <input type="date" value={matchEndDate} onChange={e => setMatchEndDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowCreateMatch(false)} className="px-4 py-2 border rounded-lg">취소</button>
+                <button onClick={handleCreateMatch} className="px-3 py-2 bg-accent-green text-white rounded-lg">대결 생성</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
+
+export default WorkoutRecommendations;

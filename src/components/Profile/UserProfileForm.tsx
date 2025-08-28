@@ -1,166 +1,99 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { UserProfileService } from '../../lib/supabaseService'
-import type { UserProfile } from '../../types/database'
+import React, { useState } from 'react';
 
-interface UserProfileFormProps {
-  onSave?: () => void
+interface UserProfile {
+  name: string;
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  height: number;
+  weight: number;
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+  fitnessGoal: 'weight_loss' | 'muscle_gain' | 'endurance' | 'flexibility' | 'general_fitness';
 }
 
-export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSave }) => {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
+interface UserProfileFormProps {
+  onSubmit: (profile: UserProfile) => void;
+}
+
+const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSubmit }) => {
   const [profile, setProfile] = useState<UserProfile>({
     name: '',
     age: 25,
     gender: 'male',
     height: 170,
     weight: 70,
-    fitness_goal: 'general_fitness',
-    experience: 'beginner',
-    equipment: 'none',
-    available_time: 60,
-    medical_conditions: ''
-  })
+    activityLevel: 'moderate',
+    fitnessGoal: 'general_fitness'
+  });
 
-  // 기존 프로필 로드
-  useEffect(() => {
-    if (user) {
-      loadUserProfile()
-    }
-  }, [user])
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(profile);
+  };
 
-  const loadUserProfile = async () => {
-    if (!user) return
-    
-    try {
-      const existingProfile = await UserProfileService.getUserProfile(user.id)
-      if (existingProfile) {
-        setProfile(existingProfile)
-      }
-    } catch (error) {
-      console.error('프로필 로드 오류:', error)
-    }
-  }
-
-  const handleInputChange = (field: keyof UserProfile, value: any) => {
+  const handleInputChange = (field: keyof UserProfile, value: string | number) => {
     setProfile(prev => ({
       ...prev,
       [field]: value
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-
-    setLoading(true)
-    setError(null)
-
-    try {
-      const profileData = {
-        ...profile,
-        user_id: user.id
-      }
-
-      const success = await UserProfileService.upsertUserProfile(profileData)
-      
-      if (success) {
-        setSaved(true)
-        onSave?.()
-        
-        // 3초 후 저장 완료 메시지 숨기기
-        setTimeout(() => setSaved(false), 3000)
-      } else {
-        setError('프로필 저장에 실패했습니다.')
-      }
-    } catch (error) {
-      setError('프로필 저장 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fitnessGoals = [
-    { value: 'weight_loss', label: '체중 감량' },
-    { value: 'muscle_gain', label: '근육량 증가' },
-    { value: 'strength', label: '근력 향상' },
-    { value: 'endurance', label: '지구력 향상' },
-    { value: 'flexibility', label: '유연성 향상' },
-    { value: 'general_fitness', label: '전반적인 체력 향상' }
-  ]
-
-  const experienceLevels = [
-    { value: 'beginner', label: '초보자' },
-    { value: 'intermediate', label: '중급자' },
-    { value: 'advanced', label: '고급자' }
-  ]
-
-  const equipmentOptions = [
-    { value: 'none', label: '없음 (맨몸 운동)' },
-    { value: 'basic', label: '기본 (덤벨, 매트 등)' },
-    { value: 'full', label: '완비 (바벨, 벤치 등)' }
-  ]
+    }));
+  };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">프로필 설정</h2>
-      
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-          {error}
-        </div>
-      )}
-
-      {saved && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-          프로필이 성공적으로 저장되었습니다!
-        </div>
-      )}
+    <div className="panel-container max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h2 className="text-panel-header font-panel-header text-text-primary mb-2">
+          사용자 프로필 설정
+        </h2>
+        <p className="text-body font-body text-text-secondary">
+          개인 맞춤형 운동 추천을 위해 프로필 정보를 입력해주세요
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 기본 정보 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              이름 *
+            <label htmlFor="name" className="block text-label font-label text-text-secondary mb-2">
+              이름
             </label>
             <input
+              id="name"
               type="text"
               value={profile.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="form-input w-full px-4 py-3"
               placeholder="이름을 입력하세요"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              나이 *
+            <label htmlFor="age" className="block text-label font-label text-text-secondary mb-2">
+              나이
             </label>
             <input
+              id="age"
               type="number"
-              min="10"
-              max="100"
+              min="1"
+              max="120"
               value={profile.age}
               onChange={(e) => handleInputChange('age', parseInt(e.target.value))}
+              className="form-input w-full px-4 py-3"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              성별 *
+            <label htmlFor="gender" className="block text-label font-label text-text-secondary mb-2">
+              성별
             </label>
             <select
+              id="gender"
               value={profile.gender}
-              onChange={(e) => handleInputChange('gender', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => handleInputChange('gender', e.target.value as 'male' | 'female' | 'other')}
+              className="form-input w-full px-4 py-3"
+              required
             >
               <option value="male">남성</option>
               <option value="female">여성</option>
@@ -169,129 +102,88 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSave }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              키 (cm) *
+            <label htmlFor="height" className="block text-label font-label text-text-secondary mb-2">
+              키 (cm)
             </label>
             <input
+              id="height"
               type="number"
               min="100"
               max="250"
               value={profile.height}
               onChange={(e) => handleInputChange('height', parseInt(e.target.value))}
+              className="form-input w-full px-4 py-3"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              체중 (kg) *
+            <label htmlFor="weight" className="block text-label font-label text-text-secondary mb-2">
+              체중 (kg)
             </label>
             <input
+              id="weight"
               type="number"
               min="30"
-              max="200"
+              max="300"
               step="0.1"
               value={profile.weight}
               onChange={(e) => handleInputChange('weight', parseFloat(e.target.value))}
+              className="form-input w-full px-4 py-3"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              운동 목표 *
+            <label htmlFor="activityLevel" className="block text-label font-label text-text-secondary mb-2">
+              활동 수준
             </label>
             <select
-              value={profile.fitness_goal}
-              onChange={(e) => handleInputChange('fitness_goal', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {fitnessGoals.map(goal => (
-                <option key={goal.value} value={goal.value}>
-                  {goal.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              운동 경험 *
-            </label>
-            <select
-              value={profile.experience}
-              onChange={(e) => handleInputChange('experience', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {experienceLevels.map(level => (
-                <option key={level.value} value={level.value}>
-                  {level.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              보유 장비 *
-            </label>
-            <select
-              value={profile.equipment}
-              onChange={(e) => handleInputChange('equipment', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {equipmentOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              운동 가능 시간 (분) *
-            </label>
-            <input
-              type="number"
-              min="15"
-              max="180"
-              step="15"
-              value={profile.available_time}
-              onChange={(e) => handleInputChange('available_time', parseInt(e.target.value))}
+              id="activityLevel"
+              value={profile.activityLevel}
+              onChange={(e) => handleInputChange('activityLevel', e.target.value as UserProfile['activityLevel'])}
+              className="form-input w-full px-4 py-3"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            >
+              <option value="sedentary">거의 움직이지 않음</option>
+              <option value="light">가벼운 활동 (주 1-3일)</option>
+              <option value="moderate">보통 활동 (주 3-5일)</option>
+              <option value="active">적극적 활동 (주 6-7일)</option>
+              <option value="very_active">매우 적극적 활동</option>
+            </select>
           </div>
         </div>
 
-        {/* 의료 정보 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            주의사항 (선택사항)
+          <label htmlFor="fitnessGoal" className="block text-label font-label text-text-secondary mb-2">
+            피트니스 목표
           </label>
-          <textarea
-            value={profile.medical_conditions || ''}
-            onChange={(e) => handleInputChange('medical_conditions', e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="건강상 주의사항이나 특별한 조건이 있다면 입력해주세요"
-          />
+          <select
+            id="fitnessGoal"
+            value={profile.fitnessGoal}
+            onChange={(e) => handleInputChange('fitnessGoal', e.target.value as UserProfile['fitnessGoal'])}
+            className="form-input w-full px-4 py-3"
+            required
+          >
+            <option value="weight_loss">체중 감량</option>
+            <option value="muscle_gain">근육 증가</option>
+            <option value="endurance">지구력 향상</option>
+            <option value="flexibility">유연성 향상</option>
+            <option value="general_fitness">전반적인 건강</option>
+          </select>
         </div>
 
-        {/* 저장 버튼 */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? '저장 중...' : '프로필 저장'}
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="utility-button w-full py-3 px-4 text-body font-body font-medium transition-all duration-200 hover:scale-105"
+        >
+          프로필 저장 및 운동 추천 받기
+        </button>
       </form>
     </div>
-  )
-}
+  );
+};
+
+export default UserProfileForm;

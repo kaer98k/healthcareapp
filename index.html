@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Chart.js 로딩 확인
+      window.addEventListener('load', function() {
+        if (window.Chart) {
+          console.log('Chart.js 로딩 성공');
+        } else {
+          console.error('Chart.js 로딩 실패');
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
