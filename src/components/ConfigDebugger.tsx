@@ -1,6 +1,8 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface ConfigDebuggerProps {
   className?: string;
@@ -52,7 +54,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
   const [windowExpanded, setWindowExpanded] = useState(false);
   const [communityRulesExpanded, setCommunityRulesExpanded] = useState(false);
 
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     loadConfiguration();
@@ -67,9 +69,9 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
       // 환경 변수 및 설정 정보 수집
       const configData = {
         environment: {
-          NODE_ENV: import.meta.env.MODE,
-          VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '***' : 'Not Set',
+          NODE_ENV: process.env.NODE_ENV,
+          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '***' : 'Not Set',
         },
         browser: {
           userAgent: navigator.userAgent,
