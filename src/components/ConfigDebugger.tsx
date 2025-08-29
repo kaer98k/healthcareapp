@@ -195,8 +195,6 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
     setIsEditing(false);
     // 실제로는 여기서 API 호출하여 프로필 업데이트
   };
-    }
-  };
 
   const saveWorkoutLogSharing = async (enabled: boolean) => {
     try {
