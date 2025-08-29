@@ -1,3 +1,5 @@
+'use client'
+
 import WorkoutPage from '@/components/WorkoutPage'
 import NavigationBar from '@/components/NavigationBar'
 

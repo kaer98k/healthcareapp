@@ -1,3 +1,5 @@
+'use client'
+
 import ConfigDebugger from '@/components/ConfigDebugger'
 import NavigationBar from '@/components/NavigationBar'
 

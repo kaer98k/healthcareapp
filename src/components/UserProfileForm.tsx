@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 // 타입은 any로 사용하여 import 문제 해결
 import { Button } from './ui/button';
