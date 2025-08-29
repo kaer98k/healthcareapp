@@ -1,11 +1,11 @@
-import WorkoutLog from '@/components/WorkoutLog'
+import Dashboard from '@/components/Dashboard'
 import NavigationBar from '@/components/NavigationBar'
 
-export default function HomePage() {
+export default function CommunityPage() {
   return (
     <div className="app-container">
       <main className="flex-1 p-6 pb-24">
-        <WorkoutLog />
+        <Dashboard />
       </main>
       <NavigationBar />
     </div>

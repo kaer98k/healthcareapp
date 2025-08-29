@@ -1,11 +1,11 @@
-import WorkoutLog from '@/components/WorkoutLog'
+import ConfigDebugger from '@/components/ConfigDebugger'
 import NavigationBar from '@/components/NavigationBar'
 
-export default function HomePage() {
+export default function SettingsPage() {
   return (
     <div className="app-container">
       <main className="flex-1 p-6 pb-24">
-        <WorkoutLog />
+        <ConfigDebugger />
       </main>
       <NavigationBar />
     </div>
