@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
 interface EmailLoginFormProps {
@@ -11,7 +13,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +26,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onSuccess }) => {
       
       if (data.user) {
         // 로그인 성공 시 메인 페이지로 이동
-        navigate('/');
+        router.push('/');
         onSuccess?.();
       }
     } catch (error: any) {
@@ -40,7 +42,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onSuccess }) => {
         {/* 헤더 */}
         <div className="text-center mb-8">
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => router.push('/login')}
             className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

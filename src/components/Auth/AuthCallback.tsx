@@ -1,9 +1,11 @@
+'use client'
+
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 export const AuthCallback: React.FC = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,29 +20,29 @@ export const AuthCallback: React.FC = () => {
         if (error) {
           console.error('세션 확인 오류:', error)
           setError('인증 처리 중 오류가 발생했습니다.')
-          setTimeout(() => navigate('/auth'), 3000)
+          setTimeout(() => router.push('/auth'), 3000)
           return
         }
 
         if (data.session) {
           console.log('인증 성공:', data.session.user.email)
           // 메인 페이지로 리디렉션
-          navigate('/')
+          router.push('/')
         } else {
           console.log('세션이 없음, 로그인 페이지로 이동')
-          navigate('/auth')
+          router.push('/auth')
         }
       } catch (err) {
         console.error('콜백 처리 예외:', err)
         setError('인증 처리 중 예상치 못한 오류가 발생했습니다.')
-        setTimeout(() => navigate('/auth'), 3000)
+        setTimeout(() => router.push('/auth'), 3000)
       } finally {
         setLoading(false)
       }
     }
 
     handleAuthCallback()
-  }, [navigate])
+  }, [router])
 
   if (loading) {
     return (
