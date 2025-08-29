@@ -3,6 +3,8 @@ import { supabase } from '../../lib/supabase';
 
 interface SignUpFormProps {
   onSuccess?: () => void;
+  onError?: (error: string) => void;
+  onSwitchToLogin?: () => void;
 }
 
 interface ProfileSetup {
@@ -10,7 +12,7 @@ interface ProfileSetup {
   profileImage: string;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
+const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess, onError, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -53,7 +55,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         setShowProfileSetup(true);
       }
     } catch (error: any) {
-      setError(error.message);
+      const errorMessage = error.message;
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -83,7 +87,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
       // 프로필 설정 완료 후 메인 화면으로 이동
       onSuccess?.();
     } catch (error: any) {
-      setError('프로필 설정에 실패했습니다: ' + error.message);
+      const errorMessage = '프로필 설정에 실패했습니다: ' + error.message;
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -311,6 +317,16 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         >
           {loading ? '가입 중...' : '회원가입'}
         </button>
+
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            이미 계정이 있으신가요? 로그인하기
+          </button>
+        </div>
       </form>
     </div>
   );
