@@ -195,19 +195,6 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
     setIsEditing(false);
     // 실제로는 여기서 API 호출하여 프로필 업데이트
   };
-
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('로그아웃 오류:', error);
-        return;
-      }
-      
-      // 로그인 페이지로 이동
-      navigate('/login');
-    } catch (error) {
-      console.error('로그아웃 중 오류 발생:', error);
     }
   };
 
