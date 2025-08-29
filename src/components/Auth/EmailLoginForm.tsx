@@ -103,20 +103,20 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({ onSuccess }) => {
         <div className="mt-8 text-center space-y-4">
           <p className="text-gray-500 text-sm">
             계정이 없으신가요?{' '}
-            <button
-              onClick={() => navigate('/signup')}
-              className="text-blue-600 hover:text-blue-700 font-medium underline"
-            >
-              회원가입
-            </button>
+                         <button
+               onClick={() => router.push('/signup')}
+               className="text-blue-600 hover:text-blue-700 font-medium underline"
+             >
+               회원가입
+             </button>
           </p>
           <p className="text-gray-500 text-sm">
-            <button
-              onClick={() => navigate('/login')}
-              className="text-blue-600 hover:text-blue-700 font-medium underline"
-            >
-              ← 소셜 로그인으로 돌아가기
-            </button>
+                         <button
+               onClick={() => router.push('/login')}
+               className="text-blue-600 hover:text-blue-700 font-medium underline"
+             >
+               ← 소셜 로그인으로 돌아가기
+             </button>
           </p>
         </div>
       </div>

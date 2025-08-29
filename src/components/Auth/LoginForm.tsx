@@ -6,9 +6,12 @@ import { supabase } from '../../lib/supabase';
 
 interface LoginFormProps {
   onSuccess?: () => void;
+  onError?: (error: string) => void;
+  onSwitchToSignUp?: () => void;
+  onSwitchToResetPassword?: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onError, onSwitchToSignUp, onSwitchToResetPassword }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -27,7 +30,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
       if (error) throw error;
     } catch (error: any) {
-      setError('구글 로그인 중 오류가 발생했습니다: ' + error.message);
+      const errorMessage = '구글 로그인 중 오류가 발생했습니다: ' + error.message;
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -47,7 +52,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
       if (error) throw error;
     } catch (error: any) {
-      setError('카카오 로그인 중 오류가 발생했습니다: ' + error.message);
+      const errorMessage = '카카오 로그인 중 오류가 발생했습니다: ' + error.message;
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -128,14 +135,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         )}
 
         {/* 푸터 */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-3">
           <p className="text-gray-500 text-sm">
             계정이 없으신가요?{' '}
             <button
-              onClick={() => navigate('/signup')}
+              onClick={onSwitchToSignUp}
               className="text-blue-600 hover:text-blue-700 font-medium underline"
             >
               회원가입
+            </button>
+          </p>
+          <p className="text-gray-500 text-sm">
+            <button
+              onClick={onSwitchToResetPassword}
+              className="text-blue-600 hover:text-blue-700 font-medium underline"
+            >
+              비밀번호를 잊으셨나요?
             </button>
           </p>
         </div>
