@@ -1046,7 +1046,7 @@ const Dashboard: React.FC = () => {
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-foreground mb-2">검색 결과가 없습니다</h3>
           <p className="text-muted-foreground mb-4">
-            <span className="font-medium">"{searchQuery}"</span>와(과) 일치하는 게시글을 찾을 수 없습니다.
+            <span className="font-medium">&quot;{searchQuery}&quot;</span>와(과) 일치하는 게시글을 찾을 수 없습니다.
           </p>
           <div className="text-sm text-muted-foreground space-y-1">
             <p>• 다른 검색어를 시도해보세요</p>
@@ -1066,7 +1066,7 @@ const Dashboard: React.FC = () => {
       {searchQuery.trim() && filteredPosts.length > 0 && (
         <div className="text-center py-6 bg-secondary rounded-lg">
           <p className="text-muted-foreground">
-            <span className="font-medium">"{searchQuery}"</span> 검색 결과: 
+            <span className="font-medium">&quot;{searchQuery}&quot;</span> 검색 결과: 
             <span className="font-medium text-foreground ml-2">
               총 {filteredPosts.length}개의 게시글
             </span>
