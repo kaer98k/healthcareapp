@@ -2,5 +2,5 @@
   "/community/page": "app/community/page.js",
   "/page": "app/page.js",
   "/workout/page": "app/workout/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/login/page": "app/login/page.js"
 }

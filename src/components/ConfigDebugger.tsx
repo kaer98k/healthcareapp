@@ -96,6 +96,20 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        throw error
+      }
+      // 로그아웃 후 로그인 페이지로 이동
+      router.push('/login')
+    } catch (error: any) {
+      console.error('로그아웃 오류:', error)
+      setError('로그아웃 중 오류가 발생했습니다.')
+    }
+  }
+
   const loadUserProfile = async () => {
     try {
       setProfileLoading(true);
