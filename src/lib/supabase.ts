@@ -1,13 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-// 환경 변수 검증
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wjkodoqunmzctepeaehb.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_g1YeOisMFXyVsr8gnkPXgQ_7D1SVnQj'
-
-// Supabase 클라이언트 생성 (환경변수가 없어도 빌드 오류 방지)
+// Supabase 클라이언트 생성 (하드코딩된 URL 사용)
 export const supabase = createClient(
-  supabaseUrl || 'https://wjkodoqunmzctepeaehb.supabase.co', 
-  supabaseAnonKey || 'sb_publishable_g1YeOisMFXyVsr8gnkPXgQ_7D1SVnQj',
+  'https://wjkodoqunmzctepeaehb.supabase.co', 
+  'sb_publishable_g1YeOisMFXyVsr8gnkPXgQ_7D1SVnQj',
   {
     auth: {
       autoRefreshToken: true,
