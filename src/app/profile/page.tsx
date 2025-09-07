@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import NavigationBar from '../../components/NavigationBar'
 import { useAuth } from '../../contexts/AuthContext'
@@ -1156,4 +1156,10 @@ const ProfilePage: React.FC = () => {
   )
 }
 
-export default ProfilePage
+export default function ProfilePageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProfilePage />
+    </Suspense>
+  )
+}

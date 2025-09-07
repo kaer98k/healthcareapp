@@ -115,13 +115,13 @@ export const useStepTracker = () => {
       );
 
       // 가속도계 시작 (지원하는 경우)
-      if ('any' in window) {
+      if ('Accelerometer' in window) {
         try {
-          anyRef.current = new any({ frequency: 60 });
+          anyRef.current = new (window as any).Accelerometer({ frequency: 60 });
           anyRef.current.addEventListener('reading', handleanyReading);
           anyRef.current.start();
         } catch (error) {
-          console.warn('any not available:', error);
+          console.warn('Accelerometer not available:', error);
         }
       }
 
