@@ -54,9 +54,12 @@ export default function CommunityPage() {
   // 게시글 로드
   const loadPosts = async () => {
     try {
+      console.log('loadPosts 시작, selectedCategory:', selectedCategory)
       setLoading(true)
       const category = selectedCategory === '전체' ? undefined : selectedCategory
       const { data, error } = await getCommunityPosts(category)
+      
+      console.log('loadPosts 결과:', { data, error, count: data?.length })
       
       if (error) {
         console.error('게시글 로드 오류:', error)
@@ -64,6 +67,7 @@ export default function CommunityPage() {
       }
       
       setPosts(data || [])
+      console.log('게시글 상태 업데이트됨:', data?.length || 0, '개')
     } catch (error) {
       console.error('게시글 로드 오류:', error)
     } finally {
