@@ -80,7 +80,9 @@ export default function HomePage() {
       }
       
       setWorkoutHistory(prev => [newWorkout, ...prev])
-      console.log('운동 기록 저장:', newWorkout)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('운동 기록 저장:', newWorkout)
+      }
       setIsSaved(true)
       
       // 3초 후 저장 완료 메시지 숨기기

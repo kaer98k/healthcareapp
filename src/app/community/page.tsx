@@ -195,10 +195,12 @@ export default function CommunityPage() {
 
   // 새 게시글 작성
   const handleSubmitPost = async () => {
-    console.log('게시하기 버튼 클릭됨')
-    console.log('제목:', newPostTitle)
-    console.log('내용:', newPostContent)
-    console.log('카테고리:', newPostCategory)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('게시하기 버튼 클릭됨')
+      console.log('제목:', newPostTitle)
+      console.log('내용:', newPostContent)
+      console.log('카테고리:', newPostCategory)
+    }
     
     if (isSubmitting) return // 중복 제출 방지
     
@@ -222,7 +224,9 @@ export default function CommunityPage() {
           commentList: []
         }
         
-        console.log('새 게시글 생성:', newPost)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('새 게시글 생성:', newPost)
+        }
         
         // 상태 업데이트
         setPosts(prevPosts => [newPost, ...prevPosts])
@@ -233,7 +237,10 @@ export default function CommunityPage() {
         setNewPostCategory('전체')
         setShowNewPost(false)
         
-        console.log('게시글 추가 완료')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('게시글 추가 완료')
+        }
+        
         
         // 성공 메시지 (선택사항)
         alert('게시글이 성공적으로 작성되었습니다!')
@@ -245,7 +252,9 @@ export default function CommunityPage() {
         setIsSubmitting(false)
       }
     } else {
-      console.log('제목 또는 내용이 비어있음')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('제목 또는 내용이 비어있음')
+      }
       alert('제목과 내용을 모두 입력해주세요.')
     }
   }
