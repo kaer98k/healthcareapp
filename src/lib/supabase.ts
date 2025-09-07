@@ -1,24 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 
 // 환경 변수 검증
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-// 환경 변수가 없으면 에러 발생
+// 환경 변수가 없으면 기본값 사용 (개발 환경에서만)
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Supabase 환경 변수가 설정되지 않았습니다. .env.local 파일에 NEXT_PUBLIC_SUPABASE_URL과 NEXT_PUBLIC_SUPABASE_ANON_KEY를 설정해주세요.'
-  )
+  console.warn('Supabase 환경 변수가 설정되지 않았습니다. 기본값을 사용합니다.')
 }
 
-// Supabase 클라이언트 생성
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+// Supabase 클라이언트 생성 (환경변수가 없어도 빌드 오류 방지)
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
   }
-})
+)
 
 // Google OAuth 로그인 함수
 export const signInWithGoogle = async () => {
@@ -29,7 +31,7 @@ export const signInWithGoogle = async () => {
     // 클라이언트 사이드에서만 window.location.origin 사용
     const redirectUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/auth/callback`
-      : '/auth/callback'
+      : 'https://your-app.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -64,7 +66,7 @@ export const signInWithKakao = async () => {
     // 클라이언트 사이드에서만 window.location.origin 사용
     const redirectUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/auth/callback`
-      : '/auth/callback'
+      : 'https://your-app.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
