@@ -458,7 +458,8 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
-      <main className="flex-1 p-3 sm:p-6 pb-32 text-white relative z-10">
+      <NavigationBar />
+      <main className="flex-1 p-4 sm:p-6 md:p-8 pb-32 text-white relative z-10">
         {/* 배경 장식 요소들 */}
         <div className="absolute inset-0 pointer-events-none z-0">
           {/* 왼쪽 원형 장식 */}
@@ -486,11 +487,11 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* 탭 메뉴 */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-1 sm:p-2 flex shadow-2xl shadow-purple-500/20">
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-1 sm:p-2 flex shadow-2xl shadow-purple-500/20 w-full max-w-md sm:max-w-lg">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
+                className={`flex-1 px-2 sm:px-4 md:px-6 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
                   activeTab === 'profile'
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50 border border-purple-400/50'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -501,7 +502,7 @@ const ProfilePage: React.FC = () => {
               {isOwnProfile && (
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
+                  className={`flex-1 px-2 sm:px-4 md:px-6 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
                     activeTab === 'settings'
                       ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50 border border-purple-400/50'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -512,7 +513,7 @@ const ProfilePage: React.FC = () => {
               )}
               <button
                 onClick={() => setActiveTab('achievements')}
-                className={`px-4 sm:px-6 md:px-8 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
+                className={`flex-1 px-2 sm:px-4 md:px-6 py-2 sm:py-3 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider ${
                   activeTab === 'achievements'
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50 border border-purple-400/50'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -527,17 +528,17 @@ const ProfilePage: React.FC = () => {
           {activeTab === 'profile' && (
             <div className="space-y-6">
               {/* 프로필 카드 */}
-              <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-purple-500/20">
+              <div className="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl shadow-purple-500/20">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
                   {/* 아바타 */}
                   <div className="relative">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-4xl sm:text-5xl text-white shadow-lg overflow-hidden">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-3xl sm:text-4xl md:text-5xl text-white shadow-lg overflow-hidden">
                       {profileImage ? (
                         <Image
                           src={profileImage}
                           alt="프로필 이미지"
-                          width={96}
-                          height={96}
+                          width={128}
+                          height={128}
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : isEditing ? (
@@ -612,7 +613,7 @@ const ProfilePage: React.FC = () => {
                       </div>
                     ) : (
                       <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.name}</h2>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">{profile.name}</h2>
                         <p className="text-gray-300 text-sm sm:text-base">{profile.email}</p>
                       </div>
                     )}
