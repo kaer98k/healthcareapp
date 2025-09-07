@@ -167,7 +167,7 @@ export default function CommunityPage() {
           id: Date.now().toString(),
           title: newPostTitle,
           content: newPostContent,
-          category: newPostCategory === '전체' ? '일반' : newPostCategory,
+          category: newPostCategory === '전체' ? '운동' : newPostCategory as '운동' | '식단' | '정신건강' | '질문' | '후기',
           likes_count: 0,
           comments_count: 0,
           is_public: true,

@@ -27,4 +27,10 @@
       "static/chunks/app/page.js"
     ]
   }
+}ity/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/community/page.js"
+    ]
+  }
 }
