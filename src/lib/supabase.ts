@@ -12,7 +12,10 @@ export const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      redirectTo: typeof window !== 'undefined' 
+        ? `${window.location.origin}/auth/callback`
+        : 'https://healthcareapp-sigma.vercel.app/auth/callback'
     }
   }
 )
