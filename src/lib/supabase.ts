@@ -11,8 +11,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Supabase 클라이언트 생성 (환경변수가 없어도 빌드 오류 방지)
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseAnonKey || 'placeholder-key',
+  supabaseUrl || 'https://wjkodoqunmzctepeaehb.supabase.co', 
+  supabaseAnonKey || 'sb_publishable_g1YeOisMFXyVsr8gnkPXgQ_7D1SVnQj',
   {
     auth: {
       autoRefreshToken: true,
