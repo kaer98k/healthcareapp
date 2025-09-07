@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   themeColor: '#06b6d4',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+  other: {
+    'mobile-web-app-capable': 'yes'
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
