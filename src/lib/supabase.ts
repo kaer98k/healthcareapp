@@ -12,10 +12,7 @@ export const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true,
-      redirectTo: typeof window !== 'undefined' 
-        ? `${window.location.origin}/auth/callback`
-        : 'https://healthcareapp-sigma.vercel.app/auth/callback'
+      detectSessionInUrl: true
     }
   }
 )
@@ -29,7 +26,7 @@ export const signInWithGoogle = async () => {
     // 클라이언트 사이드에서만 window.location.origin 사용
     const redirectUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/auth/callback`
-      : 'https://your-app.vercel.app/auth/callback'
+      : 'https://healthcareapp-sigma.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -64,7 +61,7 @@ export const signInWithKakao = async () => {
     // 클라이언트 사이드에서만 window.location.origin 사용
     const redirectUrl = typeof window !== 'undefined' 
       ? `${window.location.origin}/auth/callback`
-      : 'https://your-app.vercel.app/auth/callback'
+      : 'https://healthcareapp-sigma.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
