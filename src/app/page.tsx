@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import NavigationBar from '@/components/NavigationBar'
 import { StepTracker } from '@/components/StepTracker'
 import { useStepTracker } from '@/hooks/useStepTracker'
+import { saveWorkoutRecord, getUserWorkoutRecords } from '@/lib/workoutApi'
+import { WorkoutRecord } from '@/types/workout'
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
@@ -70,27 +72,53 @@ export default function HomePage() {
   }, [router])
 
   // 운동 기록 저장 함수
-  const handleSaveWorkout = () => {
+  const handleSaveWorkout = async () => {
     if (workoutMemo.trim() && workoutRating > 0) {
-      const newWorkout = {
-        id: Date.now().toString(),
-        date: new Date().toLocaleDateString('ko-KR'),
-        memo: workoutMemo,
-        rating: workoutRating
+      try {
+        // 걸음수 기반으로 운동 시간과 칼로리 계산
+        const estimatedDuration = Math.max(10, Math.floor(stepData.steps / 100)) // 최소 10분
+        const estimatedCalories = Math.floor(stepData.steps * 0.04) // 걸음수 * 0.04칼로리
+
+        const workoutData = {
+          exercise_type: '걷기',
+          duration: estimatedDuration,
+          calories_burned: estimatedCalories,
+          notes: `메모: ${workoutMemo}, 평점: ${workoutRating}/5`
+        }
+
+        const { data, error } = await saveWorkoutRecord(workoutData)
+        
+        if (error) {
+          console.error('운동 기록 저장 실패:', error)
+          alert('운동 기록 저장에 실패했습니다.')
+          return
+        }
+
+        // 로컬 상태 업데이트
+        const newWorkout = {
+          id: data?.id || Date.now().toString(),
+          date: new Date().toLocaleDateString('ko-KR'),
+          memo: workoutMemo,
+          rating: workoutRating
+        }
+        
+        setWorkoutHistory(prev => [newWorkout, ...prev])
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('운동 기록 저장:', newWorkout)
+        }
+        setIsSaved(true)
+        
+        // 3초 후 저장 완료 메시지 숨기기
+        setTimeout(() => {
+          setIsSaved(false)
+          setWorkoutMemo('')
+          setWorkoutRating(0)
+        }, 3000)
+      } catch (error) {
+        console.error('운동 기록 저장 오류:', error)
+        alert('운동 기록 저장 중 오류가 발생했습니다.')
       }
-      
-      setWorkoutHistory(prev => [newWorkout, ...prev])
-      if (process.env.NODE_ENV === 'development') {
-        console.log('운동 기록 저장:', newWorkout)
-      }
-      setIsSaved(true)
-      
-      // 3초 후 저장 완료 메시지 숨기기
-      setTimeout(() => {
-        setIsSaved(false)
-        setWorkoutMemo('')
-        setWorkoutRating(0)
-      }, 3000)
     } else {
       alert('운동 기록과 평가를 모두 입력해주세요.')
     }

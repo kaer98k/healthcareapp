@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,9 @@ import {
   Send,
   X
 } from 'lucide-react'
+import { getCommunityPosts, createCommunityPost, togglePostLike } from '@/lib/communityApi'
+import { CommunityPost } from '@/types/community'
+import { useAuth } from '@/contexts/AuthContext'
 
 // 댓글 타입 정의
 interface Comment {
@@ -27,22 +30,7 @@ interface Comment {
   timestamp: string
 }
 
-// 커뮤니티 게시글 타입 정의
-interface CommunityPost {
-  id: string
-  author: string
-  avatar: string
-  title: string
-  content: string
-  likes: number
-  comments: number
-  shares: number
-  timestamp: string
-  category: string
-  isLiked: boolean
-  isScrapped: boolean
-  commentList: Comment[]
-}
+// 기존 CommunityPost 타입은 @/types/community에서 import
 
 // 샘플 데이터
 const samplePosts: CommunityPost[] = [
@@ -119,7 +107,9 @@ const samplePosts: CommunityPost[] = [
 const categories = ['전체', '운동', '식단', '정신건강', '질문', '후기']
 
 export default function CommunityPage() {
-  const [posts, setPosts] = useState<CommunityPost[]>(samplePosts)
+  const [posts, setPosts] = useState<CommunityPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState('전체')
   const [searchQuery, setSearchQuery] = useState('')
   const [newPostTitle, setNewPostTitle] = useState('')
@@ -131,18 +121,60 @@ export default function CommunityPage() {
   const [newComment, setNewComment] = useState<{ [postId: string]: string }>({})
   const [activeTab, setActiveTab] = useState<'all' | 'scrapped'>('all')
 
-  // 좋아요 토글
-  const toggleLike = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isLiked: !post.isLiked,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1
-          }
-        : post
-    ))
+  // 게시글 로드
+  const loadPosts = async () => {
+    try {
+      setLoading(true)
+      const category = selectedCategory === '전체' ? undefined : selectedCategory
+      const { data, error } = await getCommunityPosts(category)
+      
+      if (error) {
+        console.error('게시글 로드 오류:', error)
+        return
+      }
+      
+      setPosts(data || [])
+    } catch (error) {
+      console.error('게시글 로드 오류:', error)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  // 좋아요 토글
+  const toggleLike = async (postId: string) => {
+    if (!user) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    try {
+      const { data, error } = await togglePostLike(postId)
+      
+      if (error) {
+        console.error('좋아요 토글 오류:', error)
+        return
+      }
+
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.map(post => 
+        post.id === postId 
+          ? { 
+              ...post, 
+              is_liked: data?.is_liked || false,
+              likes_count: (post.likes_count || 0) + (data?.is_liked ? 1 : -1)
+            }
+          : post
+      ))
+    } catch (error) {
+      console.error('좋아요 토글 오류:', error)
+    }
+  }
+
+  // 컴포넌트 마운트 시 게시글 로드
+  useEffect(() => {
+    loadPosts()
+  }, [selectedCategory])
 
   // 스크랩 토글
   const toggleScrap = (postId: string) => {
