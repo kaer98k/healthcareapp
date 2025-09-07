@@ -350,7 +350,7 @@ export default function HomePage() {
                     const maxSteps = 20000
                     
                     // 부드러운 파도 모양 곡선 생성
-                    const createWaveCurve = (points) => {
+                    const createWaveCurve = (points: { x: number; y: number }[]) => {
                       if (points.length < 2) return ''
                       
                       let path = `M ${points[0].x} ${points[0].y}`
