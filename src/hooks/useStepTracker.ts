@@ -41,7 +41,7 @@ export const useStepTracker = () => {
   });
 
   const lastPositionRef = useRef<{ latitude: number; longitude: number } | null>(null);
-  const AccelerometerRef = useRef<Accelerometer | null>(null);| null>(null);
+  const AccelerometerRef = useRef<Accelerometer | null>(null);| null>(null);| null>(null);
   const watchIdRef = useRef<number | null>(null);
 
 
