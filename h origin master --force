@@ -1,0 +1,5 @@
+[33m56b322c[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Fix TeamData type error by adding startDate and endDate properties
+[33me73a175[m Fix AddressSearch import error completely
+[33m3971c67[m Fix all build errors: remove AddressSearch import and wrap console.logs
+[33m9c415f0[m Fix TypeScript type error in createWaveCurve function
+[33me9f1d4b[m Fix all Button component variant and size errors
