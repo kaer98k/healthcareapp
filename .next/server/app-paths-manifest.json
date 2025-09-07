@@ -1,10 +1,10 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
   "/auth/callback/page": "app/auth/callback/page.js",
-  "/challenge/page": "app/challenge/page.js",
-  "/page": "app/page.js",
   "/workout/page": "app/workout/page.js",
-  "/profile/page": "app/profile/page.js",
   "/community/page": "app/community/page.js",
-  "/login/page": "app/login/page.js"
+  "/challenge/page": "app/challenge/page.js",
+  "/login/page": "app/login/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/page": "app/page.js"
 }
