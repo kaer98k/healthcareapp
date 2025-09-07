@@ -440,27 +440,27 @@ export default function CommunityPage() {
                   <div className="flex items-center space-x-2 sm:space-x-4">
                     <Button
                       variant="outline"
-                      onClick={() => toggleLike(post.id)}
+                      onClick={() => post.id && toggleLike(post.id)}
                       className={`flex items-center space-x-1 text-xs sm:text-sm ${
-                        post.isLiked 
+                        post.is_liked 
                           ? 'text-pink-400 hover:text-pink-300' 
                           : 'text-gray-300 hover:text-pink-400'
                       }`}
                     >
-                      <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${post.isLiked ? 'fill-current' : ''}`} />
-                      <span>{post.likes}</span>
+                      <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${post.is_liked ? 'fill-current' : ''}`} />
+                      <span>{post.likes_count || 0}</span>
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={() => toggleComments(post.id)}
+                      onClick={() => post.id && toggleComments(post.id)}
                       className="flex items-center space-x-1 text-xs sm:text-sm text-gray-300 hover:text-white"
                     >
                       <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>{post.comments}</span>
+                      <span>{post.comments_count || 0}</span>
                     </Button>
                     <Button variant="outline"  className="flex items-center space-x-1 text-xs sm:text-sm text-gray-300 hover:text-purple-400">
                       <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>{post.shares}</span>
+                      <span>0</span>
                     </Button>
                   </div>
                 </div>
