@@ -141,14 +141,13 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSubmit }) =>
 
         {/* 주소 필드 추가 */}
         <div className="md:col-span-2">
-        // AddressSearch 부분을 이렇게 변경
-   <Input
-     type="text"
-     placeholder="주소를 입력하세요"
-     value={profile.address || ''}
-     onChange={(e) => handleProfileChange('address', e.target.value)}
-     className="w-full"
-   /> 
+          <Input
+            type="text"
+            placeholder="주소를 입력하세요"
+            value={profile.address || ''}
+            onChange={(e) => handleProfileChange('address', e.target.value)}
+            className="w-full"
+          />
         </div>
       </div>
 
