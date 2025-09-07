@@ -23,10 +23,8 @@ export const signInWithGoogle = async () => {
     console.log('Google OAuth 시작...')
     console.log('Supabase URL:', supabaseUrl || 'https://wjkodoqunmzctepeaehb.supabase.co')
     
-    // 클라이언트 사이드에서만 window.location.origin 사용
-    const redirectUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}/auth/callback`
-      : 'https://healthcareapp-sigma.vercel.app/auth/callback'
+    // 프로덕션에서는 항상 Vercel 도메인 사용
+    const redirectUrl = 'https://healthcareapp-sigma.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -58,10 +56,8 @@ export const signInWithKakao = async () => {
     console.log('Kakao OAuth 시작...')
     console.log('Supabase URL:', supabaseUrl || 'https://wjkodoqunmzctepeaehb.supabase.co')
     
-    // 클라이언트 사이드에서만 window.location.origin 사용
-    const redirectUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}/auth/callback`
-      : 'https://healthcareapp-sigma.vercel.app/auth/callback'
+    // 프로덕션에서는 항상 Vercel 도메인 사용
+    const redirectUrl = 'https://healthcareapp-sigma.vercel.app/auth/callback'
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
