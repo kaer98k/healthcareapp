@@ -83,5 +83,25 @@ export const signInWithKakao = async () => {
   }
 }
 
+// 로그아웃 함수
+export const signOut = async () => {
+  try {
+    console.log('로그아웃 시작...')
+    
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      console.error('로그아웃 오류:', error)
+      throw error
+    }
+    
+    console.log('로그아웃 성공')
+    return { error: null }
+  } catch (error) {
+    console.error('로그아웃 예외:', error)
+    return { error }
+  }
+}
+
 // 타입 안전성을 위한 헬퍼 함수
 export const getSupabaseClient = () => supabase

@@ -381,7 +381,13 @@ const ProfilePage: React.FC = () => {
 
   // 로그아웃
   const handleLogout = async () => {
-    await signOut()
+    try {
+      await signOut()
+      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('로그아웃 오류:', error)
+    }
   }
 
   // 비공개 정보 표시 컴포넌트
