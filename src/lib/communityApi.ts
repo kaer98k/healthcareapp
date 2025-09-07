@@ -179,15 +179,25 @@ export const togglePostLike = async (postId: string): Promise<{ data: { is_liked
 
       if (deleteError) throw deleteError
 
+      // 현재 좋아요 수 조회
+      const { data: postData, error: fetchError } = await supabase
+        .from('community_posts')
+        .select('likes_count')
+        .eq('id', postId)
+        .single()
+
+      if (fetchError) throw fetchError
+
       // 좋아요 수 감소
+      const newLikesCount = Math.max(0, (postData.likes_count || 0) - 1)
       const { error: updateError } = await supabase
         .from('community_posts')
-        .update({ likes_count: supabase.raw('likes_count - 1') })
+        .update({ likes_count: newLikesCount })
         .eq('id', postId)
 
       if (updateError) throw updateError
 
-      return { data: { is_liked: false, likes_count: 0 }, error: null }
+      return { data: { is_liked: false, likes_count: newLikesCount }, error: null }
     } else {
       // 좋아요 추가
       const { error: insertError } = await supabase
@@ -196,15 +206,25 @@ export const togglePostLike = async (postId: string): Promise<{ data: { is_liked
 
       if (insertError) throw insertError
 
+      // 현재 좋아요 수 조회
+      const { data: postData, error: fetchError } = await supabase
+        .from('community_posts')
+        .select('likes_count')
+        .eq('id', postId)
+        .single()
+
+      if (fetchError) throw fetchError
+
       // 좋아요 수 증가
+      const newLikesCount = (postData.likes_count || 0) + 1
       const { error: updateError } = await supabase
         .from('community_posts')
-        .update({ likes_count: supabase.raw('likes_count + 1') })
+        .update({ likes_count: newLikesCount })
         .eq('id', postId)
 
       if (updateError) throw updateError
 
-      return { data: { is_liked: true, likes_count: 1 }, error: null }
+      return { data: { is_liked: true, likes_count: newLikesCount }, error: null }
     }
   } catch (error) {
     console.error('좋아요 토글 오류:', error)
