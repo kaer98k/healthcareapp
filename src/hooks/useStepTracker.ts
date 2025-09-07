@@ -22,7 +22,7 @@ export const useStepTracker = () => {
 
   const lastPositionRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const watchIdRef = useRef<number | null>(null);
-  const accelerometerRef = useRef<Accelerometer | null>(null);
+  const anyRef = useRef<any | null>(null);
 
   // 두 지점 간 거리 계산 (Haversine formula)
   const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -68,9 +68,9 @@ export const useStepTracker = () => {
   }, [calculateDistance]);
 
   // 가속도계를 통한 걸음 감지
-  const handleAccelerometerReading = useCallback(() => {
-    if (accelerometerRef.current) {
-      const { x, y, z } = accelerometerRef.current;
+  const handleanyReading = useCallback(() => {
+    if (anyRef.current) {
+      const { x, y, z } = anyRef.current;
       const magnitude = Math.sqrt(x * x + y * y + z * z);
       
       // 임계값을 넘으면 걸음으로 인식
@@ -114,13 +114,13 @@ export const useStepTracker = () => {
       );
 
       // 가속도계 시작 (지원하는 경우)
-      if ('Accelerometer' in window) {
+      if ('any' in window) {
         try {
-          accelerometerRef.current = new Accelerometer({ frequency: 60 });
-          accelerometerRef.current.addEventListener('reading', handleAccelerometerReading);
-          accelerometerRef.current.start();
+          anyRef.current = new any({ frequency: 60 });
+          anyRef.current.addEventListener('reading', handleanyReading);
+          anyRef.current.start();
         } catch (error) {
-          console.warn('Accelerometer not available:', error);
+          console.warn('any not available:', error);
         }
       }
 
@@ -131,7 +131,7 @@ export const useStepTracker = () => {
         isTracking: false
       }));
     }
-  }, [handleLocationUpdate, handleAccelerometerReading]);
+  }, [handleLocationUpdate, handleanyReading]);
 
   // 추적 중지
   const stopTracking = useCallback(() => {
@@ -140,9 +140,9 @@ export const useStepTracker = () => {
       watchIdRef.current = null;
     }
     
-    if (accelerometerRef.current) {
-      accelerometerRef.current.stop();
-      accelerometerRef.current = null;
+    if (anyRef.current) {
+      anyRef.current.stop();
+      anyRef.current = null;
     }
     
     setStepData(prev => ({ ...prev, isTracking: false }));
