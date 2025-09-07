@@ -106,16 +106,10 @@ export default function CommunityPage() {
     loadPosts()
   }, [selectedCategory])
 
-  // 스크랩 토글
+  // 스크랩 토글 (현재는 비활성화)
   const toggleScrap = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isScrapped: !post.isScrapped
-          }
-        : post
-    ))
+    // 스크랩 기능은 현재 비활성화
+    console.log('스크랩 기능은 현재 비활성화되어 있습니다.')
   }
 
   // 댓글 토글
@@ -172,18 +166,22 @@ export default function CommunityPage() {
       try {
         const newPost: CommunityPost = {
           id: Date.now().toString(),
-          author: '나',
-          avatar: '👤',
           title: newPostTitle,
           content: newPostContent,
-          likes: 0,
-          comments: 0,
-          shares: 0,
-          timestamp: '방금 전',
           category: newPostCategory === '전체' ? '일반' : newPostCategory,
-          isLiked: false,
-          isScrapped: false,
-          commentList: []
+          likes_count: 0,
+          comments_count: 0,
+          is_public: true,
+          created_at: new Date().toISOString(),
+          user: {
+            id: user?.id || '',
+            email: user?.email || '',
+            user_metadata: {
+              name: user?.user_metadata?.name || '사용자',
+              avatar_url: user?.user_metadata?.avatar_url
+            }
+          },
+          is_liked: false
         }
         
         if (process.env.NODE_ENV === 'development') {
@@ -223,10 +221,6 @@ export default function CommunityPage() {
 
   // 카테고리별 필터링
   const filteredPosts = posts.filter(post => {
-    // 탭별 필터링
-    if (activeTab === 'scrapped' && !post.isScrapped) return false
-    if (activeTab === 'all' && post.isScrapped) return true
-    
     // 카테고리 필터링
     const categoryMatch = selectedCategory === '전체' || post.category === selectedCategory
     
@@ -418,17 +412,7 @@ export default function CommunityPage() {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => toggleScrap(post.id)}
-                    className={`flex-shrink-0 ${
-                      post.isScrapped 
-                        ? 'text-yellow-400 hover:text-yellow-300' 
-                        : 'text-gray-300 hover:text-yellow-400 hover:bg-gray-700/50'
-                    }`}
-                  >
-                    <Star className={`w-4 h-4 ${post.isScrapped ? 'fill-current' : ''}`} />
-                  </Button>
+                  {/* 스크랩 버튼은 현재 비활성화 */}
                 </div>
               </CardHeader>
               <CardContent className="bg-gray-900">
