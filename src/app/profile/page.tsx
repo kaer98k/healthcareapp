@@ -382,11 +382,22 @@ const ProfilePage: React.FC = () => {
   // 로그아웃
   const handleLogout = async () => {
     try {
+      console.log('로그아웃 시작...')
       await signOut()
-      // 로그인 페이지로 리다이렉트
-      window.location.href = '/login'
+      console.log('로그아웃 완료, 리다이렉트 중...')
+      
+      // 모바일에서 더 안정적인 리다이렉트
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/login')
+        }
+      }, 100)
     } catch (error) {
       console.error('로그아웃 오류:', error)
+      // 오류가 발생해도 로그인 페이지로 이동
+      if (typeof window !== 'undefined') {
+        window.location.replace('/login')
+      }
     }
   }
 
@@ -845,11 +856,11 @@ const ProfilePage: React.FC = () => {
 
           {/* 설정 탭 */}
           {activeTab === 'settings' && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* 프라이버시 설정 */}
-              <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-500/20">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-                  <Shield className="w-5 h-5 mr-2 text-purple-400" />
+              <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-4 md:p-6 shadow-2xl shadow-purple-500/20">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center">
+                  <Shield className="w-4 h-4 md:w-5 md:h-5 mr-2 text-purple-400" />
                   프라이버시 설정
                 </h3>
                 <div className="space-y-6">
@@ -922,9 +933,9 @@ const ProfilePage: React.FC = () => {
               </div>
 
               {/* 계정 설정 */}
-              <div className="bg-gray-900/50 backdrop-blur-sm border border-cyan-500/30 rounded-2xl p-6 shadow-2xl shadow-cyan-500/20">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-                  <Settings className="w-5 h-5 mr-2 text-cyan-400" />
+              <div className="bg-gray-900/50 backdrop-blur-sm border border-cyan-500/30 rounded-2xl p-4 md:p-6 shadow-2xl shadow-cyan-500/20">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center">
+                  <Settings className="w-4 h-4 md:w-5 md:h-5 mr-2 text-cyan-400" />
                   계정 설정
                 </h3>
                 <div className="space-y-4">
@@ -967,17 +978,17 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-gray-900/50 backdrop-blur-sm border border-red-500/30 rounded-2xl p-6 shadow-2xl shadow-red-500/20">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-                  <LogOut className="w-5 h-5 mr-2 text-red-400" />
+              <div className="bg-gray-900/50 backdrop-blur-sm border border-red-500/30 rounded-2xl p-4 md:p-6 shadow-2xl shadow-red-500/20">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center">
+                  <LogOut className="w-4 h-4 md:w-5 md:h-5 mr-2 text-red-400" />
                   계정 관리
                 </h3>
                 <div className="space-y-4">
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 flex items-center justify-center space-x-2"
+                    className="w-full px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold transition-all duration-300 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 active:scale-95 flex items-center justify-center space-x-2 text-sm md:text-base touch-manipulation"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4 h-4 md:w-5 md:h-5" />
                     <span>로그아웃</span>
                   </button>
                 </div>
