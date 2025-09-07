@@ -448,8 +448,7 @@ export default function CommunityPage() {
                     </div>
                   </div>
                   <Button 
-                    variant="ghost" 
-                    size="sm" 
+                    variant="outline" 
                     onClick={() => toggleScrap(post.id)}
                     className={`flex-shrink-0 ${
                       post.isScrapped 
@@ -469,8 +468,7 @@ export default function CommunityPage() {
                 <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-purple-500/20">
                   <div className="flex items-center space-x-2 sm:space-x-4">
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="outline"
                       onClick={() => toggleLike(post.id)}
                       className={`flex items-center space-x-1 text-xs sm:text-sm ${
                         post.isLiked 
@@ -482,15 +480,14 @@ export default function CommunityPage() {
                       <span>{post.likes}</span>
                     </Button>
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
+                      variant="outline" 
                       onClick={() => toggleComments(post.id)}
                       className="flex items-center space-x-1 text-xs sm:text-sm text-gray-300 hover:text-white"
                     >
                       <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{post.comments}</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-xs sm:text-sm text-gray-300 hover:text-purple-400">
+                    <Button variant="outline"  className="flex items-center space-x-1 text-xs sm:text-sm text-gray-300 hover:text-purple-400">
                       <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{post.shares}</span>
                     </Button>
@@ -533,7 +530,6 @@ export default function CommunityPage() {
                         />
                         <Button
                           onClick={() => addComment(post.id)}
-                          size="sm"
                           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg shadow-purple-500/25 px-3 sm:px-4"
                         >
                           <Send className="w-3 h-3 sm:w-4 sm:h-4" />

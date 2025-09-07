@@ -1,0 +1,5 @@
+[33m5cd5d17[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Fix Button component and useEffect warnings
+[33mec5e916[m Fix client-side errors for Vercel deployment
+[33m6710ded[m Fix build errors and optimize for deployment
+[33m1e4ea4e[m Fix syntax error: Remove misplaced brackets in ConfigDebugger component
+[33m324714c[m Fix duplicate handleLogout function in ConfigDebugger component
