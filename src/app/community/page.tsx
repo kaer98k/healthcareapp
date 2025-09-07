@@ -150,6 +150,11 @@ export default function CommunityPage() {
 
   // 새 게시글 작성
   const handleSubmitPost = async () => {
+    if (!user) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
     if (process.env.NODE_ENV === 'development') {
       console.log('게시하기 버튼 클릭됨')
       console.log('제목:', newPostTitle)
@@ -160,6 +165,10 @@ export default function CommunityPage() {
     if (isSubmitting) return // 중복 제출 방지
     
     if (newPostTitle.trim() && newPostContent.trim()) {
+      if (newPostCategory === '전체') {
+        alert('카테고리를 선택해주세요.')
+        return
+      }
       setIsSubmitting(true)
       
       try {
@@ -187,14 +196,30 @@ export default function CommunityPage() {
           console.log('새 게시글 생성:', newPost)
         }
         
-        // 상태 업데이트
-        setPosts(prevPosts => [newPost, ...prevPosts])
+        // 데이터베이스에 게시글 저장
+        const { data, error } = await createCommunityPost({
+          title: newPostTitle,
+          content: newPostContent,
+          category: newPostCategory as '운동' | '식단' | '정신건강' | '질문' | '후기',
+          is_public: true
+        })
+
+        if (error) {
+          console.error('게시글 저장 실패:', error)
+          alert('게시글 저장에 실패했습니다.')
+          return
+        }
+
+        // 게시글 목록 새로고침
+        await loadPosts()
         
         // 폼 초기화
         setNewPostTitle('')
         setNewPostContent('')
         setNewPostCategory('전체')
         setShowNewPost(false)
+        
+        alert('게시글이 작성되었습니다!')
         
         if (process.env.NODE_ENV === 'development') {
           console.log('게시글 추가 완료')
@@ -483,11 +508,11 @@ export default function CommunityPage() {
 
         {/* 게시글이 없을 때 */}
         {filteredPosts.length === 0 && (
-          <Card className="bg-gray-900/80 backdrop-blur-sm border-cyan-500/30 shadow-lg shadow-cyan-500/10">
+          <Card className="bg-gray-800/90 backdrop-blur-sm border-gray-600/50 shadow-lg shadow-gray-900/20">
             <CardContent className="p-8 sm:p-12 text-center">
-              <MessageCircle className="w-12 h-12 sm:w-16 sm:h-16 text-cyan-400 mx-auto mb-4" />
-              <h3 className="text-lg sm:text-xl font-semibold text-cyan-200 mb-2">게시글이 없습니다</h3>
-              <p className="text-cyan-300 mb-4 sm:mb-6 text-sm sm:text-base">첫 번째 게시글을 작성해보세요!</p>
+              <MessageCircle className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-300 mb-2">게시글이 없습니다</h3>
+              <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">첫 번째 게시글을 작성해보세요!</p>
               <Button 
                 onClick={() => setShowNewPost(true)}
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-black shadow-lg shadow-cyan-500/25"
