@@ -42,7 +42,9 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
     challengeType: 'steps',
     maxMembers: 4,
     isPrivate: false,
-    prize: ''
+    prize: '',
+    startDate: '',
+    endDate: ''
   });
 
   useEffect(() => {
