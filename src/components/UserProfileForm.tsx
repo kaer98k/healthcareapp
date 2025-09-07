@@ -40,7 +40,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSubmit }) =>
   const isProfileValid = () => {
     return profile.name && profile.age && profile.gender && profile.height && profile.weight;
   };
-
+  
   const handleSubmit = () => {
     if (isProfileValid()) {
       onSubmit(profile, oneRM);

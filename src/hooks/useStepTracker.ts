@@ -1,24 +1,4 @@
-// Accelerometer 타입 정의
-interface Accelerometer {
-  addEventListener: (event: string, handler: () => void) => void;
-  start: () => void;
-  stop: () => void;
-  x: number;
-  y: number;
-  z: number;
-}
-
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-// Accelerometer 타입 정의
-interface Accelerometer {
-  addEventListener: (event: string, handler: () => void) => void;
-  start: () => void;
-  stop: () => void;
-  x: number;
-  y: number;
-  z: number;
-}
 
 interface StepData {
   steps: number;
@@ -41,9 +21,9 @@ export const useStepTracker = () => {
   });
 
   const lastPositionRef = useRef<{ latitude: number; longitude: number } | null>(null);
-  const AccelerometerRef = useRef<Accelerometer | null>(null);| null>(null);| null>(null);
+  const AccelerometerRef = useRef<any | null>(null);
   const watchIdRef = useRef<number | null>(null);
-
+  const anyRef = useRef<any | null>(null);
 
   // 두 지점 간 거리 계산 (Haversine formula)
   const calculateDistance = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -89,9 +69,9 @@ export const useStepTracker = () => {
   }, [calculateDistance]);
 
   // 가속도계를 통한 걸음 감지
-  const handleAccelerometerReading = useCallback(() => {
-    if (AccelerometerRef.current) {
-      const { x, y, z } = AccelerometerRef.current;
+  const handleanyReading = useCallback(() => {
+    if (anyRef.current) {
+      const { x, y, z } = anyRef.current;
       const magnitude = Math.sqrt(x * x + y * y + z * z);
       
       // 임계값을 넘으면 걸음으로 인식
@@ -135,24 +115,24 @@ export const useStepTracker = () => {
       );
 
       // 가속도계 시작 (지원하는 경우)
-      if ('Accelerometer' in window) {
+      if ('any' in window) {
         try {
-          AccelerometerRef.current = new Accelerometer({ frequency: 60 });
-          AccelerometerRef.current.addEventListener('reading', handleAccelerometerReading);
-          AccelerometerRef.current.start();
+          anyRef.current = new any({ frequency: 60 });
+          anyRef.current.addEventListener('reading', handleanyReading);
+          anyRef.current.start();
         } catch (error) {
-          console.warn('Accelerometer not available:', error);
+          console.warn('any not available:', error);
         }
       }
 
-    } catch (error: Accelerometer) {
+    } catch (error: any) {
       setStepData(prev => ({
         ...prev,
         error: `추적 시작 실패: ${error.message}`,
         isTracking: false
       }));
     }
-  }, [handleLocationUpdate, handleAccelerometerReading]);
+  }, [handleLocationUpdate, handleanyReading]);
 
   // 추적 중지
   const stopTracking = useCallback(() => {
@@ -161,9 +141,9 @@ export const useStepTracker = () => {
       watchIdRef.current = null;
     }
     
-    if (AccelerometerRef.current) {
-      AccelerometerRef.current.stop();
-      AccelerometerRef.current = null;
+    if (anyRef.current) {
+      anyRef.current.stop();
+      anyRef.current = null;
     }
     
     setStepData(prev => ({ ...prev, isTracking: false }));
