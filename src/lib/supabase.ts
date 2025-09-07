@@ -1,13 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // 환경 변수 검증
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-
-// 환경 변수가 없으면 기본값 사용 (개발 환경에서만)
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase 환경 변수가 설정되지 않았습니다. 기본값을 사용합니다.')
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wjkodoqunmzctepeaehb.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_g1YeOisMFXyVsr8gnkPXgQ_7D1SVnQj'
 
 // Supabase 클라이언트 생성 (환경변수가 없어도 빌드 오류 방지)
 export const supabase = createClient(
