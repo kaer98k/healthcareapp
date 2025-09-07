@@ -857,7 +857,7 @@ const ProfilePage: React.FC = () => {
 
           {/* 설정 탭 */}
           {activeTab === 'settings' && (
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4 md:space-y-6 pb-20">
               {/* 프라이버시 설정 */}
               <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-4 md:p-6 shadow-2xl shadow-purple-500/20">
                 <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center">

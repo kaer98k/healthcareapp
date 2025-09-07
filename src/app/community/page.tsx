@@ -192,6 +192,13 @@ export default function CommunityPage() {
           console.log('새 게시글 생성:', newPost)
         }
         
+        console.log('게시글 작성 시작:', {
+          title: newPostTitle,
+          content: newPostContent,
+          category: newPostCategory,
+          user: user?.id
+        })
+
         // 데이터베이스에 게시글 저장
         const { data, error } = await createCommunityPost({
           title: newPostTitle,
@@ -199,6 +206,8 @@ export default function CommunityPage() {
           category: newPostCategory === '전체' ? '운동' : newPostCategory as '운동' | '식단' | '정신건강' | '질문' | '후기',
           is_public: true
         })
+
+        console.log('게시글 저장 결과:', { data, error })
 
         if (error) {
           console.error('게시글 저장 실패:', error)
