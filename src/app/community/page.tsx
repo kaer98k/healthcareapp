@@ -140,8 +140,7 @@ export default function CommunityPage() {
       post.id === postId 
         ? { 
             ...post, 
-            commentList: [...post.commentList, newCommentObj],
-            comments: post.comments + 1
+            comments_count: (post.comments_count || 0) + 1
           }
         : post
     ))
@@ -452,45 +451,12 @@ export default function CommunityPage() {
                 {/* 댓글 섹션 */}
                 {expandedComments.has(post.id) && (
                   <div className="mt-4 pt-4 border-t border-purple-500/20">
-                    {/* 기존 댓글들 */}
-                    <div className="space-y-3 mb-4">
-                      {post.commentList.map((comment) => (
-                        <div key={comment.id} className="flex space-x-2 sm:space-x-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm flex-shrink-0">
-                            {comment.avatar}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className="font-medium text-white text-xs sm:text-sm">{comment.author}</span>
-                              <span className="text-xs text-gray-300">{comment.timestamp}</span>
-                            </div>
-                            <p className="text-gray-200 text-xs sm:text-sm leading-relaxed">{comment.content}</p>
-                          </div>
-                        </div>
-                      ))}
+                    {/* 댓글 기능은 현재 비활성화 */}
+                    <div className="text-center text-gray-400 text-sm py-4">
+                      댓글 기능은 현재 개발 중입니다.
                     </div>
 
-                    {/* 새 댓글 작성 */}
-                    <div className="flex space-x-2">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm flex-shrink-0">
-                        👤
-                      </div>
-                      <div className="flex-1 flex space-x-2">
-                        <Input
-                          placeholder="댓글을 입력하세요..."
-                          value={newComment[post.id] || ''}
-                          onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
-                          className="flex-1 text-xs sm:text-sm bg-gray-800/50 backdrop-blur-sm border-purple-500/30 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20"
-                          onKeyPress={(e) => e.key === 'Enter' && addComment(post.id)}
-                        />
-                        <Button
-                          onClick={() => addComment(post.id)}
-                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg shadow-purple-500/25 px-3 sm:px-4"
-                        >
-                          <Send className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                    {/* 댓글 작성 기능은 현재 비활성화 */}
                   </div>
                 )}
               </CardContent>
