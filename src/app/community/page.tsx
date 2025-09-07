@@ -398,13 +398,30 @@ export default function CommunityPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white text-sm sm:text-lg flex-shrink-0">
-                      {post.avatar}
+                      {post.user?.user_metadata?.avatar_url ? (
+                        <img 
+                          src={post.user.user_metadata.avatar_url} 
+                          alt="프로필" 
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        '👤'
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{post.author}</h3>
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">
+                        {post.user?.user_metadata?.name || post.user?.email || '사용자'}
+                      </h3>
                       <div className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-gray-300">
                         <Clock className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{post.timestamp}</span>
+                        <span className="truncate">
+                          {post.created_at ? new Date(post.created_at).toLocaleString('ko-KR', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : '방금 전'}
+                        </span>
                         <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs flex-shrink-0 border border-purple-500/30">
                           {post.category}
                         </span>
