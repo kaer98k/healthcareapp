@@ -55,14 +55,24 @@ export default function CommunityPage() {
   const loadPosts = async () => {
     try {
       console.log('loadPosts 시작, selectedCategory:', selectedCategory)
+      console.log('현재 환경:', typeof window !== 'undefined' ? '클라이언트' : '서버')
+      console.log('User Agent:', typeof window !== 'undefined' ? window.navigator.userAgent : 'N/A')
+      
       setLoading(true)
       const category = selectedCategory === '전체' ? undefined : selectedCategory
       const { data, error } = await getCommunityPosts(category)
       
-      console.log('loadPosts 결과:', { data, error, count: data?.length })
+      console.log('loadPosts 결과:', { 
+        data, 
+        error, 
+        count: data?.length,
+        errorCode: error?.code,
+        errorMessage: error?.message
+      })
       
       if (error) {
         console.error('게시글 로드 오류:', error)
+        alert(`게시글 로드 실패: ${error.message || '알 수 없는 오류'}`)
         return
       }
       
@@ -70,6 +80,7 @@ export default function CommunityPage() {
       console.log('게시글 상태 업데이트됨:', data?.length || 0, '개')
     } catch (error) {
       console.error('게시글 로드 오류:', error)
+      alert(`게시글 로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
     } finally {
       setLoading(false)
     }

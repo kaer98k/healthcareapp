@@ -5,6 +5,11 @@ import { CommunityPost, CreateCommunityPost, UpdateCommunityPost, PostLike } fro
 export const getCommunityPosts = async (category?: string): Promise<{ data: CommunityPost[] | null; error: any }> => {
   try {
     console.log('getCommunityPosts 호출됨, category:', category)
+    console.log('현재 환경:', typeof window !== 'undefined' ? '클라이언트' : '서버')
+    
+    // Supabase 연결 상태 확인
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('인증 상태:', { user: !!user, authError })
     
     let query = supabase
       .from('community_posts')
@@ -25,9 +30,18 @@ export const getCommunityPosts = async (category?: string): Promise<{ data: Comm
 
     const { data, error } = await query
 
-    console.log('getCommunityPosts 결과:', { data, error, count: data?.length })
+    console.log('getCommunityPosts 결과:', { 
+      data, 
+      error, 
+      count: data?.length,
+      errorCode: error?.code,
+      errorMessage: error?.message
+    })
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase 쿼리 오류 상세:', error)
+      throw error
+    }
 
     // 현재 사용자가 좋아요를 눌렀는지 확인
     const postsWithLikes = await Promise.all(
@@ -57,22 +71,34 @@ export const getCommunityPosts = async (category?: string): Promise<{ data: Comm
 export const createCommunityPost = async (post: CreateCommunityPost): Promise<{ data: CommunityPost | null; error: any }> => {
   try {
     console.log('createCommunityPost 호출됨:', post)
+    console.log('현재 환경:', typeof window !== 'undefined' ? '클라이언트' : '서버')
     
     // 현재 사용자 확인
     const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
+    console.log('사용자 인증 결과:', { user: !!user, userError })
+    
+    if (userError) {
       console.error('사용자 인증 오류:', userError)
+      throw new Error(`인증 오류: ${userError.message}`)
+    }
+    
+    if (!user) {
+      console.error('사용자가 로그인되지 않음')
       throw new Error('로그인이 필요합니다.')
     }
     
-    console.log('현재 사용자:', user.id)
+    console.log('현재 사용자 ID:', user.id)
+
+    const insertData = {
+      ...post,
+      user_id: user.id
+    }
+    
+    console.log('삽입할 데이터:', insertData)
 
     const { data, error } = await supabase
       .from('community_posts')
-      .insert([{
-        ...post,
-        user_id: user.id
-      }])
+      .insert([insertData])
       .select(`
         *,
         user:user_id (
@@ -83,9 +109,18 @@ export const createCommunityPost = async (post: CreateCommunityPost): Promise<{ 
       `)
       .single()
 
-    console.log('Supabase 응답:', { data, error })
+    console.log('Supabase 응답:', { 
+      data, 
+      error,
+      errorCode: error?.code,
+      errorMessage: error?.message,
+      errorDetails: error?.details
+    })
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase 삽입 오류 상세:', error)
+      throw error
+    }
 
     return { data, error: null }
   } catch (error) {
