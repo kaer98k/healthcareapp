@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import Image from 'next/image';
 
 interface SignUpFormProps {
   onSuccess?: () => void;
@@ -152,9 +153,11 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess, onError, onSwitchToL
               <div className="relative">
                 {imagePreview ? (
                   <div className="relative">
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="프로필 이미지"
+                      width={96}
+                      height={96}
                       className="w-24 h-24 rounded-full object-cover border-4 border-border"
                     />
                     <button

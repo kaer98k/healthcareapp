@@ -26,10 +26,15 @@ export const signInWithGoogle = async () => {
     console.log('Google OAuth 시작...')
     console.log('Supabase URL:', supabaseUrl)
     
+    // 클라이언트 사이드에서만 window.location.origin 사용
+    const redirectUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback'
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://spdwmdsuwshovphqvyyl.supabase.co/auth/v1/callback',
+        redirectTo: redirectUrl,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent'
@@ -46,6 +51,41 @@ export const signInWithGoogle = async () => {
     return { data, error: null }
   } catch (error) {
     console.error('Google OAuth 예외:', error)
+    return { data: null, error }
+  }
+}
+
+// Kakao OAuth 로그인 함수
+export const signInWithKakao = async () => {
+  try {
+    console.log('Kakao OAuth 시작...')
+    console.log('Supabase URL:', supabaseUrl)
+    
+    // 클라이언트 사이드에서만 window.location.origin 사용
+    const redirectUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/auth/callback`
+      : '/auth/callback'
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    })
+    
+    if (error) {
+      console.error('Kakao OAuth 오류:', error)
+      throw error
+    }
+    
+    console.log('Kakao OAuth 성공:', data)
+    return { data, error: null }
+  } catch (error) {
+    console.error('Kakao OAuth 예외:', error)
     return { data: null, error }
   }
 }

@@ -44,7 +44,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 인증 상태 변경 리스너
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('인증 상태 변경:', event, session?.user?.email)
+        // 개발 환경에서만 로그 출력
+        if (process.env.NODE_ENV === 'development') {
+          console.log('인증 상태 변경:', event, session?.user?.email)
+        }
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)

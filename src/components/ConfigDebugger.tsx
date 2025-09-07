@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface ConfigDebuggerProps {
   className?: string;
@@ -73,17 +74,17 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
           NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
           NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '***' : 'Not Set',
         },
-        browser: {
+        browser: typeof window !== 'undefined' ? {
           userAgent: navigator.userAgent,
           language: navigator.language,
           platform: navigator.platform,
           cookieEnabled: navigator.cookieEnabled,
-        },
-        window: {
+        } : {},
+        window: typeof window !== 'undefined' ? {
           innerWidth: window.innerWidth,
           innerHeight: window.innerHeight,
           location: window.location.href,
-        },
+        } : {},
         timestamp: new Date().toISOString(),
       };
 
@@ -272,9 +273,9 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
   }
 
   return (
-    <div className="panel-container max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto bg-white">
       <div className="mb-8">
-        <h2 className="text-panel-header font-panel-header text-foreground mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           설정
         </h2>
       </div>
@@ -283,7 +284,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
       
       {/* 1행: 사용자 프로필 */}
       <div className="space-y-6 mb-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-body font-body font-medium text-foreground flex items-center">
               사용자 프로필
@@ -323,9 +324,11 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
                   <div className="relative">
                     {imagePreview ? (
                       <div className="relative">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="프로필 이미지"
+                          width={96}
+                          height={96}
                           className="w-24 h-24 rounded-full object-cover border-4 border-border"
                         />
                         <button
@@ -528,9 +531,11 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
               <div className="text-center">
                 <div className="inline-block">
                   {userProfile.profileImage ? (
-                    <img
+                    <Image
                       src={userProfile.profileImage}
                       alt="프로필 이미지"
+                      width={80}
+                      height={80}
                       className="w-20 h-20 rounded-full object-cover border-4 border-border mx-auto"
                     />
                   ) : (
@@ -615,7 +620,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
 
       {/* 2행: 알림 설정 */}
       <div className="space-y-6 mb-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="text-body font-body font-medium text-foreground mb-4 flex items-center">
             알림 설정
           </h3>
@@ -645,7 +650,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
 
       {/* 2.5행: 운동 일지 공유 설정 */}
       <div className="space-y-6 mb-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h3 className="text-body font-body font-medium text-foreground mb-4 flex items-center">
             🔒 운동 일지 공유 설정
           </h3>
@@ -708,7 +713,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
 
       {/* 2.6행: 커뮤니티 세부 규정사항 */}
       <div className="space-y-6 mb-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-body font-body font-medium text-foreground flex items-center">
               📋 커뮤니티 세부 규정사항
@@ -782,7 +787,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
       {/* 4행: 시스템 정보 */}
       <div className="space-y-6 mb-8">
         {/* 브라우저 정보 */}
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-body font-body font-medium text-foreground flex items-center">
               브라우저 정보
@@ -814,7 +819,7 @@ const ConfigDebugger: React.FC<ConfigDebuggerProps> = ({ className }) => {
         </div>
 
         {/* 윈도우 정보 */}
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-body font-body font-medium text-foreground flex items-center">
               윈도우 정보

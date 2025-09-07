@@ -221,7 +221,7 @@ const WorkoutRecommendations: React.FC = () => {
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-4">신박 챌린지</h2>
-              <p>재미있는 챌린지가 여기에 표시됩니다.</p>
+              <p className="text-text-secondary">신박 챌린지 기능이 제거되었습니다.</p>
             </div>
           </div>
         )}

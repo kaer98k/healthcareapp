@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import ConfigDebugger from './ConfigDebugger';
 
 interface WorkoutEntry {
   id: string;
@@ -33,6 +34,18 @@ interface UserProfile {
   weight?: number;
 }
 
+interface Notification {
+  id: string;
+  type: 'friend_request' | 'workout_like' | 'comment' | 'system';
+  title: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+  fromUser?: string;
+  fromUserNickname?: string;
+  relatedId?: string;
+}
+
 
 
 const WorkoutLog: React.FC = () => {
@@ -43,6 +56,9 @@ const WorkoutLog: React.FC = () => {
   const [searchedUserWorkouts, setSearchedUserWorkouts] = useState<WorkoutEntry[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [newEntry, setNewEntry] = useState({
     workoutType: '',
@@ -79,6 +95,9 @@ const WorkoutLog: React.FC = () => {
           setCurrentUser(basicUser);
           // 현재 사용자의 운동일지 로드 (로컬 상태만)
           // loadUserWorkouts(user.id);
+          
+          // 샘플 알림 데이터 로드
+          loadSampleNotifications();
         }
       } catch (error) {
         console.error('사용자 정보 로드 오류:', error);
@@ -86,6 +105,78 @@ const WorkoutLog: React.FC = () => {
     };
     getCurrentUser();
   }, []);
+
+  // 샘플 알림 데이터 생성
+  const loadSampleNotifications = () => {
+    const sampleNotifications: Notification[] = [
+      {
+        id: '1',
+        type: 'friend_request',
+        title: '친구 신청',
+        message: '운동마스터김철수님이 친구 신청을 보냈습니다.',
+        timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+        isRead: false,
+        fromUser: 'user1',
+        fromUserNickname: '운동마스터김철수'
+      },
+      {
+        id: '2',
+        type: 'workout_like',
+        title: '운동일지 좋아요',
+        message: '헬스러버박영희님이 당신의 운동일지에 좋아요를 눌렀습니다.',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        isRead: false,
+        fromUser: 'user2',
+        fromUserNickname: '헬스러버박영희'
+      },
+      {
+        id: '3',
+        type: 'comment',
+        title: '댓글 알림',
+        message: '요가마스터이민수님이 당신의 운동일지에 댓글을 남겼습니다.',
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+        isRead: true,
+        fromUser: 'user3',
+        fromUserNickname: '요가마스터이민수'
+      },
+      {
+        id: '4',
+        type: 'system',
+        title: '시스템 업데이트',
+        message: '새로운 운동 챌린지가 추가되었습니다. 참여해보세요!',
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        isRead: true
+      },
+    ];
+    
+    setNotifications(sampleNotifications);
+  };
+
+  // 알림 읽음 처리
+  const markNotificationAsRead = (notificationId: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
+  };
+
+  // 모든 알림 읽음 처리
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, isRead: true }))
+    );
+  };
+
+  // 알림 삭제
+  const deleteNotification = (notificationId: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== notificationId));
+  };
+
+  // 읽지 않은 알림 개수
+  const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
   // 사용자의 운동일지 로드
   const loadUserWorkouts = async (userId: string) => {
@@ -383,14 +474,42 @@ const WorkoutLog: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* 헤더 */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 relative">
         <h1 className="text-3xl font-bold text-text-primary mb-2">운동 일지</h1>
         <p className="text-text-secondary">나의 운동 기록을 남기고 관리하세요</p>
+        
+        {/* 설정 아이콘 - 우측 하단 */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="absolute bottom-0 right-0 p-2 text-text-primary hover:text-accent-green transition-colors duration-200 hover:scale-110"
+          title="설정"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+
+        {/* 알림 아이콘 (종 모양) - 설정 아이콘 오른쪽 */}
+        <button
+          onClick={() => setShowNotifications(true)}
+          className="absolute bottom-0 right-2 p-2 text-text-primary hover:text-accent-green transition-colors duration-200 hover:scale-110 relative"
+          title="알림"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* 닉네임 검색 바 */}
       <div className="bg-background-secondary border border-border-primary rounded-lg p-4 mb-8">
-        <h3 className="font-medium text-text-primary mb-3">다른 사용자 운동일지 검색</h3>
+        <h3 className="font-medium text-text-primary mb-3">닉네임 검색</h3>
         <div className="flex space-x-3">
           <input
             type="text"
@@ -751,6 +870,132 @@ const WorkoutLog: React.FC = () => {
           새로운 운동 기록을 남기고 목표를 달성해보세요!
         </p>
       </div>
+
+      {/* 설정 모달 */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">설정</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                title="닫기"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 bg-white">
+              <ConfigDebugger />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 알림 모달 */}
+      {showNotifications && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <h2 className="text-2xl font-bold text-gray-900">알림</h2>
+                {unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-sm px-2 py-1 rounded-full">
+                    {unreadCount}개
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllNotificationsAsRead}
+                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    모두 읽음
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                  title="닫기"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-4">
+              {notifications.length > 0 ? (
+                <div className="space-y-3">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`p-4 rounded-lg border ${
+                        notification.isRead 
+                          ? 'bg-gray-50 border-gray-200' 
+                          : 'bg-blue-50 border-blue-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className={`w-3 h-3 rounded-full ${
+                              notification.type === 'friend_request' ? 'bg-green-500' :
+                              notification.type === 'workout_like' ? 'bg-red-500' :
+                              notification.type === 'comment' ? 'bg-blue-500' :
+                              'bg-yellow-500'
+                            }`}></div>
+                            <h3 className={`font-medium ${
+                              notification.isRead ? 'text-gray-700' : 'text-gray-900'
+                            }`}>
+                              {notification.title}
+                            </h3>
+                            {!notification.isRead && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                          </div>
+                          <p className={`text-sm ${
+                            notification.isRead ? 'text-gray-600' : 'text-gray-800'
+                          }`}>
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(notification.timestamp).toLocaleString('ko-KR')}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          {!notification.isRead && (
+                            <button
+                              onClick={() => markNotificationAsRead(notification.id)}
+                              className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              읽음
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteNotification(notification.id)}
+                            className="text-xs text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-4">🔔</div>
+                  <p className="text-gray-600">알림이 없습니다.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

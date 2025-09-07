@@ -1,0 +1,33 @@
+{
+  "name": "Healthcare App - 실시간 걸음수 추적",
+  "short_name": "HealthApp",
+  "description": "실시간 위치 기반 걸음수 추적 및 건강 관리 앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#06b6d4",
+  "orientation": "portrait",
+  "scope": "/",
+  "permissions": [
+    "geolocation",
+    "accelerometer"
+  ],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "fitness", "lifestyle"],
+  "lang": "ko",
+  "dir": "ltr"
+}
+
