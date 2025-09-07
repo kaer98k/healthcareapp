@@ -466,7 +466,7 @@ export default function CommunityPage() {
                 </div>
 
                 {/* 댓글 섹션 */}
-                {expandedComments.has(post.id) && (
+                {post.id && expandedComments.has(post.id) && (
                   <div className="mt-4 pt-4 border-t border-purple-500/20">
                     {/* 댓글 기능은 현재 비활성화 */}
                     <div className="text-center text-gray-400 text-sm py-4">
