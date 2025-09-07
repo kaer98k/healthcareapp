@@ -68,7 +68,7 @@ const ChallengePage: React.FC = () => {
       console.log('Challenge Page - dailySteps:', dailySteps);
       console.log('Challenge Page - isTracking:', stepData.isTracking);
     }
-  }, [stepData.steps, lastResetDate, dailySteps]);
+  }, [stepData.steps, stepData.isTracking, lastResetDate, dailySteps]);
   
   const [teams, setTeams] = useState<TeamData[]>([
     {

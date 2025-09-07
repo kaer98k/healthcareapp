@@ -335,7 +335,6 @@ export default function CommunityPage() {
                 <CardTitle className="text-lg sm:text-xl font-semibold text-cyan-200">새 게시글 작성</CardTitle>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={() => setShowNewPost(false)}
                   className="p-1 text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/20"
                 >
